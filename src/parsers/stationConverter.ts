@@ -1,4 +1,3 @@
-import { parse } from "path";
 import { Station } from "../models/Station";
 import { CsvStation } from "./models/csvStation";
 import { CsvPrice } from "./models/csvPrice";

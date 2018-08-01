@@ -1,5 +1,3 @@
-import parse from "csv-parse";
-import { ReadStream } from "fs";
 import { CsvPrice } from "./models/csvPrice";
 import moment from "moment";
 import { parseCsvSkip2Lines } from "./csvUtils";

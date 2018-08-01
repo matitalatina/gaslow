@@ -1,4 +1,4 @@
-import { Moment } from "../../node_modules/moment";
+import { Moment } from "moment";
 
 export type Price = {
   fuelType: String,
