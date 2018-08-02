@@ -1,11 +1,10 @@
-import { GeoType } from "./../models/Station";
-import { Station } from "../models/Station";
+import { GeoType, StationModel, Station } from "./../models/Station";
 import { CsvStation } from "./models/csvStation";
 import { CsvPrice } from "./models/csvPrice";
 import { keyBy } from "lodash";
 export class StationConverter {
-  merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): Station[] {
-    const stations: Station[] = csvStations.map(s => {
+  merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): StationModel[] {
+    const stations: StationModel[] = csvStations.map(s => {
       const station = Object.assign({
         prices: [],
         location: {
@@ -15,7 +14,7 @@ export class StationConverter {
       }, s);
       delete station.latitude;
       delete station.longitude;
-      return station;
+      return new Station(station);
     });
     const stationsById = keyBy(stations, "id");
     csvPrices.forEach(p => {

@@ -1,4 +1,5 @@
 import { Moment } from "moment";
+import mongoose from "mongoose";
 
 export enum GeoType {
   Point = "Point",
@@ -14,7 +15,7 @@ export type Price = {
   isSelf: boolean,
   updatedAt: Moment,
 };
-export type Station = {
+export type StationModel = mongoose.Document & {
   id: number,
   manager: string,
   brand: string,
@@ -26,3 +27,29 @@ export type Station = {
   location: GeoJSON,
   prices: Price[],
 };
+
+const stationSchema = new mongoose.Schema({
+  id: Number,
+  manager: String,
+  brand: String,
+  type: String,
+  name: String,
+  address: String,
+  city: String,
+  province: String,
+  location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      required: true,
+    },
+    coordinates: [Number],
+  },
+  prices: [{
+    fuelType: String,
+    price: Number,
+    isSelf: Boolean,
+    updatedAt: Date,
+  }],
+}, { timestamps: true });
+export const Station = mongoose.model<StationModel>("Station", stationSchema);

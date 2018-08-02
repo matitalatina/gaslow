@@ -1,6 +1,6 @@
 import { StationConverter } from "./../../src/parsers/stationConverter";
 import chai from "chai";
-import { Station } from "./../../src/models/Station";
+import { StationModel } from "./../../src/models/Station";
 import moment from "moment";
 import { CsvPrice } from "./../../src/parsers/models/csvPrice";
 import { CsvStation } from "./../../src/parsers/models/csvStation";
@@ -35,7 +35,7 @@ describe("StationConverter", () => {
         };
       });
     }));
-    const stations: Station[] = new StationConverter().merge(csvStations, csvPrices);
+    const stations: StationModel[] = new StationConverter().merge(csvStations, csvPrices);
     expect(stations.length).to.be.eq(4);
     const firstStation = stations[0];
     expect(firstStation.id).to.be.eq(0);
@@ -55,6 +55,6 @@ describe("StationConverter", () => {
       price: 102,
       isSelf: true,
     });
-    expect(price.updatedAt.isSame(moment(102))).to.be.true;
+    expect(moment(price.updatedAt).isSame(moment(102))).to.be.true;
   });
 });
