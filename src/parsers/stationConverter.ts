@@ -1,4 +1,4 @@
-import { GeoType, StationModel, Station } from "./../models/Station";
+import { GeoType, StationModel, Station } from "../models/station";
 import { CsvStation } from "./models/csvStation";
 import { CsvPrice } from "./models/csvPrice";
 import { keyBy } from "lodash";
