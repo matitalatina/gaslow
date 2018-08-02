@@ -1,5 +1,13 @@
 import { Moment } from "moment";
 
+export enum GeoType {
+  Point = "Point",
+}
+export type GeoJSON = {
+  type: GeoType,
+  coordinates: number[],
+};
+
 export type Price = {
   fuelType: String,
   price: number,
@@ -15,7 +23,6 @@ export type Station = {
   address: string,
   city: string,
   province: string,
-  latitude: number,
-  longitude: number,
+  location: GeoJSON,
   prices: Price[],
 };

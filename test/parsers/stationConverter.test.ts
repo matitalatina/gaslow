@@ -46,8 +46,8 @@ describe("StationConverter", () => {
     expect(firstStation.address).to.be.eq("address0");
     expect(firstStation.city).to.be.eq("city0");
     expect(firstStation.province).to.be.eq("province0");
-    expect(firstStation.latitude).to.be.eq(1.0);
-    expect(firstStation.longitude).to.be.eq(2.0);
+    expect(firstStation.location.coordinates[1]).to.be.eq(1.0);
+    expect(firstStation.location.coordinates[0]).to.be.eq(2.0);
 
     const secondStation = stations[1];
     const price = find(secondStation.prices, {
