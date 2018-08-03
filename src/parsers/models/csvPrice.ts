@@ -1,5 +1,3 @@
-import { Moment } from "moment";
-
 export type CsvPrice = {
   idStation: number,
   fuelType: String,

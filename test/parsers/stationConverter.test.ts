@@ -31,7 +31,7 @@ describe("StationConverter", () => {
           fuelType: "fuelType" + idPrice,
           price: idPrice,
           isSelf: true,
-          updatedAt: moment(idPrice),
+          updatedAt: moment(idPrice).toDate(),
         };
       });
     }));
