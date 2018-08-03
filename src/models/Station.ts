@@ -13,7 +13,7 @@ export type Price = {
   fuelType: String,
   price: number,
   isSelf: boolean,
-  updatedAt: Moment,
+  updatedAt: Date,
 };
 export type StationModel = mongoose.Document & {
   id: number,
