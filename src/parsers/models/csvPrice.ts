@@ -5,5 +5,5 @@ export type CsvPrice = {
   fuelType: String,
   price: number,
   isSelf: boolean,
-  updatedAt: Moment,
+  updatedAt: Date,
 };
