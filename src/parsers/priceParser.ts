@@ -10,7 +10,7 @@ export class PriceParser {
         fuelType: csvRow[1],
         price: parseFloat(csvRow[2]),
         isSelf: csvRow[3] === "1",
-        updatedAt: moment(csvRow[4], "DD/MM/YYYY HH:mm:ss"),
+        updatedAt: moment(csvRow[4], "DD/MM/YYYY HH:mm:ss").toDate(),
       }));
     });
   }
