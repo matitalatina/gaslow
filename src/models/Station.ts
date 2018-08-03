@@ -1,5 +1,6 @@
 import { Moment } from "moment";
-import mongoose from "mongoose";
+import mongoose, { Model } from "mongoose";
+import { BulkWriteOpResultObject } from "../../node_modules/@types/mongodb";
 
 export enum GeoType {
   Point = "Point",
@@ -15,7 +16,7 @@ export type Price = {
   isSelf: boolean,
   updatedAt: Date,
 };
-export type StationModel = mongoose.Document & {
+export type IStation = mongoose.Document & {
   id: number,
   manager: string,
   brand: string,
@@ -28,15 +29,19 @@ export type StationModel = mongoose.Document & {
   prices: Price[],
 };
 
+export type IStationModel = Model<IStation> & {
+  bulkUpsertById: (stations: IStation[]) => Promise<BulkWriteOpResultObject>,
+};
+
 const stationSchema = new mongoose.Schema({
-  id: Number,
+  id: { type: Number, required: true, index: true, unique: true },
   manager: String,
   brand: String,
   type: String,
-  name: String,
-  address: String,
-  city: String,
-  province: String,
+  name: { type: String, required: true },
+  address: { type: String, required: true },
+  city: { type: String, required: true },
+  province: { type: String, required: true },
   location: {
     type: {
       type: String,
@@ -46,10 +51,21 @@ const stationSchema = new mongoose.Schema({
     coordinates: [Number],
   },
   prices: [{
-    fuelType: String,
-    price: Number,
-    isSelf: Boolean,
-    updatedAt: Date,
+    fuelType: { type: String, required: true },
+    price: { type: Number, required: true },
+    isSelf: { type: Boolean, required: true },
+    updatedAt: { type: Date, required: true },
   }],
 }, { timestamps: true });
-export const Station = mongoose.model<StationModel>("Station", stationSchema);
+
+stationSchema.statics.bulkUpsertById = function (stations: IStation[]) {
+  const stationUpdates = stations.map(station => ({
+    updateOne: {
+      filter: { id: station.id },
+      update: station,
+      upsert: true,
+    }
+  }));
+  return (this as Model<IStation>).collection.bulkWrite(stationUpdates);
+};
+export const Station: IStationModel = mongoose.model<IStation, IStationModel>("Station", stationSchema);
