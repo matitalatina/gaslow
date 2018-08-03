@@ -16,7 +16,7 @@ export class StringDownloader {
         });
       });
 
-      request.on("error", function (e) {
+      request.on("error", function (e: any) {
         reject(e);
       });
     });
