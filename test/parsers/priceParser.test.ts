@@ -11,20 +11,20 @@ const expect = chai.expect;
 describe("PriceParser", () => {
   it("should parse prices, removing first two useless lines", (done) => {
     getFileAsString("test/resources/prezzo_alle_8.csv").then((csvString) => {
-      return new PriceParser().parse(csvString);
+      return PriceParser.parse(csvString);
     })
       .then((csvData) => {
         expect(csvData.length).is.equal(7);
         done();
       })
       .catch((err) => {
-        done.fail("Failed :( ");
+        done.fail("Failed :( " + err);
       });
   });
 
   it("should convert correctly a price", (done) => {
     getFileAsString("test/resources/prezzo_alle_8.csv").then((csvString) => {
-      return new PriceParser().parse(csvString);
+      return PriceParser.parse(csvString);
     })
       .then((prices) => {
         const price = prices[0];

@@ -5,7 +5,7 @@ export function parseCsvSkip2Lines(csv: string): Promise<Array<string[]>> {
     const csvLines = csv.split("\n");
     csvLines.shift();
     csvLines.shift();
-    parse(csvLines.join("\n"), { delimiter: ";" }, (err, output) => {
+    parse(csvLines.join("\n"), { delimiter: ";", quote: false }, (err, output) => {
       err ? reject(err) : resolve(output);
     });
   });

@@ -1,6 +1,6 @@
 import { Moment } from "moment";
 import mongoose, { Model } from "mongoose";
-import { BulkWriteOpResultObject } from "../../node_modules/@types/mongodb";
+import { BulkWriteOpResultObject } from "mongodb";
 
 export enum GeoType {
   Point = "Point",
@@ -68,4 +68,10 @@ stationSchema.statics.bulkUpsertById = function (stations: IStation[]) {
   }));
   return (this as Model<IStation>).collection.bulkWrite(stationUpdates);
 };
-export const Station: IStationModel = mongoose.model<IStation, IStationModel>("Station", stationSchema);
+export const Station: IStationModel = (() => {
+  try {
+    return mongoose.model<IStation, IStationModel>("Station");
+  } catch (e) {
+    return mongoose.model<IStation, IStationModel>("Station", stationSchema);
+  }
+})();

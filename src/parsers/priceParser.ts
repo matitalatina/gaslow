@@ -3,7 +3,7 @@ import moment from "moment";
 import { parseCsvSkip2Lines } from "./csvUtils";
 
 export class PriceParser {
-  parse(csv: string): Promise<Array<CsvPrice>> {
+  static parse(csv: string): Promise<Array<CsvPrice>> {
     return parseCsvSkip2Lines(csv).then((csvList: Array<string[]>) => {
       return csvList.map(csvRow => ({
         idStation: parseInt(csvRow[0]),

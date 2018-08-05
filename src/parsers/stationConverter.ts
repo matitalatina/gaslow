@@ -3,7 +3,7 @@ import { CsvStation } from "./models/csvStation";
 import { CsvPrice } from "./models/csvPrice";
 import { keyBy } from "lodash";
 export class StationConverter {
-  merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): IStation[] {
+  static merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): IStation[] {
     const stations: IStation[] = csvStations.map(s => {
       const station = Object.assign({
         prices: [],
@@ -18,7 +18,13 @@ export class StationConverter {
     });
     const stationsById = keyBy(stations, "id");
     csvPrices.forEach(p => {
-      stationsById[p.idStation].prices.push(p);
+      const s = stationsById[p.idStation];
+      if (s) {
+        s.prices.push(p);
+      }
+      else {
+        console.log(p.idStation + " not found in station");
+      }
       delete p["idStation"];
     });
     return stations;

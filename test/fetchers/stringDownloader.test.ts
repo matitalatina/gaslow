@@ -5,7 +5,7 @@ const expect = chai.expect;
 
 describe("StringDownloader", () => {
   it("should download the README.md as string (https)", () => {
-    return new StringDownloader()
+    return StringDownloader
       .download("https://raw.githubusercontent.com/matitalatina/gaslow/master/README.md")
       .then((file) => {
         expect(file).to.contains("GasLow");

@@ -10,7 +10,7 @@ describe("StationParser", () => {
 
   beforeEach(() => {
     parsedStations = getFileAsString("test/resources/anagrafica_impianti_attivi.csv")
-      .then((csvString) => new StationParser().parse(csvString));
+      .then((csvString) => StationParser.parse(csvString));
   });
 
   it("should parse the csv skipping the first two lines", (done) => {

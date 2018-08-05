@@ -35,7 +35,7 @@ describe("StationConverter", () => {
         };
       });
     }));
-    const stations: IStation[] = new StationConverter().merge(csvStations, csvPrices);
+    const stations: IStation[] = StationConverter.merge(csvStations, csvPrices);
     expect(stations.length).to.be.eq(4);
     const firstStation = stations[0];
     expect(firstStation.id).to.be.eq(0);

@@ -2,7 +2,7 @@ import { parseCsvSkip2Lines } from "./csvUtils";
 import { CsvStation } from "./models/csvStation";
 
 export default class StationParser {
-  parse(csv: string): Promise<Array<CsvStation>> {
+  static parse(csv: string): Promise<Array<CsvStation>> {
     return parseCsvSkip2Lines(csv)
       .then((csvLines) => csvLines.map(row => ({
         id: parseInt(row[0]),

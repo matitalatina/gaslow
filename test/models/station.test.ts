@@ -1,3 +1,4 @@
+import { StationService } from "./../../src/services/stationService";
 import { Station } from "./../../src/models/Station";
 import { aStation } from "../utils/fixtures";
 
@@ -61,6 +62,13 @@ describe("Station", () => {
         expect(err.errors["prices.0.updatedAt"]).to.be.exist;
         expect(err.errors.city).to.be.exist;
         expect(err.errors.province).to.be.exist;
+      });
+  });
+
+  it.skip("should work (full path)", () => {
+    return StationService.updateStationCollection()
+      .catch((err) => {
+        console.log(err);
       });
   });
 });
