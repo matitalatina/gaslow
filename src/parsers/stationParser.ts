@@ -13,8 +13,8 @@ export default class StationParser {
         address: row[5],
         city: row[6],
         province: row[7],
-        latitude: parseFloat(row[8]),
-        longitude: parseFloat(row[9]),
+        latitude: row[8] != "NULL" ? parseFloat(row[8]) : undefined,
+        longitude: row[9] != "NULL" ? parseFloat(row[9]) : undefined,
       })));
   }
 }

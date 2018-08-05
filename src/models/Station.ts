@@ -1,6 +1,7 @@
-import { Moment } from "moment";
+import { IStation } from "./Station";
 import mongoose, { Model } from "mongoose";
 import { BulkWriteOpResultObject } from "mongodb";
+import { isNumber } from "lodash";
 
 export enum GeoType {
   Point = "Point",
@@ -16,7 +17,8 @@ export type Price = {
   isSelf: boolean,
   updatedAt: Date,
 };
-export type IStation = mongoose.Document & {
+
+export type IStationRaw = {
   id: number,
   manager: string,
   brand: string,
@@ -28,9 +30,10 @@ export type IStation = mongoose.Document & {
   location: GeoJSON,
   prices: Price[],
 };
+export type IStation = mongoose.Document & IStationRaw;
 
 export type IStationModel = Model<IStation> & {
-  bulkUpsertById: (stations: IStation[]) => Promise<BulkWriteOpResultObject>,
+  bulkUpsertById: (stations: IStationRaw[]) => Promise<BulkWriteOpResultObject>,
 };
 
 const stationSchema = new mongoose.Schema({
@@ -58,14 +61,24 @@ const stationSchema = new mongoose.Schema({
   }],
 }, { timestamps: true });
 
+stationSchema.index({ "location": "2dsphere" });
+
 stationSchema.statics.bulkUpsertById = function (stations: IStation[]) {
-  const stationUpdates = stations.map(station => ({
-    updateOne: {
-      filter: { id: station.id },
-      update: station,
-      upsert: true,
-    }
-  }));
+  const stationUpdates = stations
+    .filter(s => {
+      const hasValidCoords = isNumber(s.location.coordinates[0]) && isNumber(s.location.coordinates[1]);
+      if (!hasValidCoords) {
+        console.log("Invalid coords: " + s);
+      }
+      return hasValidCoords;
+    })
+    .map(station => ({
+      updateOne: {
+        filter: { id: station.id },
+        update: station,
+        upsert: true,
+      }
+    }));
   return (this as Model<IStation>).collection.bulkWrite(stationUpdates);
 };
 export const Station: IStationModel = (() => {
