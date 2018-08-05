@@ -1,12 +1,10 @@
 import { StationService } from "./../../src/services/stationService";
-import { Station } from "./../../src/models/Station";
+import { Station, IStation } from "./../../src/models/Station";
 import { aStation } from "../utils/fixtures";
 
 import chai from "chai";
-import { doesNotThrow } from "assert";
 import { connectMongoTest, closeMongoTest } from "../utils/mongo";
 import { range } from "lodash";
-import { stat } from "fs";
 
 const expect = chai.expect;
 
@@ -62,6 +60,17 @@ describe("Station", () => {
         expect(err.errors["prices.0.updatedAt"]).to.be.exist;
         expect(err.errors.city).to.be.exist;
         expect(err.errors.province).to.be.exist;
+      });
+  });
+
+  it("should retrieve nearest stations by coordinates", () => {
+    const stations = range(4)
+      .map(aStation);
+    return Station.bulkUpsertById(stations)
+      .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
+      .then((stations: IStation[]) => {
+        expect(stations.length).to.be.eq(2);
+        expect(stations[0].id).to.be.eq(1);
       });
   });
 

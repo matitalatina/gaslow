@@ -1,3 +1,4 @@
+import { Station, IStation } from "./../../src/models/Station";
 import { StationService } from "./../../src/services/stationService";
 import { PriceParser } from "./../../src/parsers/priceParser";
 import { StringDownloader } from "./../../src/fetchers/stringDownloader";
@@ -6,7 +7,6 @@ import { createSandbox } from "sinon";
 import StationParser from "../../src/parsers/stationParser";
 import { aStation, aCsvPrice, aCsvStation } from "../utils/fixtures";
 import { StationConverter } from "../../src/parsers/stationConverter";
-import { Station } from "../../src/models/Station";
 
 const sandbox = createSandbox();
 
@@ -53,6 +53,15 @@ describe("StationService", () => {
         expect(stationConverter.calledOnceWith([aCsvStation()], [aCsvPrice()]));
         expect(station.called).to.be.true;
       });
+  });
 
+  it("should find nearest stations given lat and lng", () => {
+    const returnedStation = aStation();
+    const stationFind = sandbox.stub(Station, "findNearestByCoordinates")
+      .returns(Promise.resolve([returnedStation]));
+    return StationService.findNearestByCoordinates(1.0, 2.0)
+      .then(([station]: IStation[]) => {
+        expect(station.id).to.be.eq(returnedStation.id);
+      });
   });
 });

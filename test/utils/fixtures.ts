@@ -16,7 +16,7 @@ export function aStation(i: number = 1): IStation {
     province: "province" + i,
     location: {
       type: "Point",
-      coordinates: [2.0, 1.0]
+      coordinates: [i * 2.0, i * 1.0]
     },
     prices: [{
       fuelType: "fuelType",

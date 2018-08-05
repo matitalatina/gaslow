@@ -1,12 +1,12 @@
 {
-  "name": "express-typescript-starter",
+  "name": "gaslow",
   "version": "0.1.0",
-  "description": "A starting point for Node.js express apps with TypeScript",
+  "description": "Italian API price gas stations",
   "repository": {
     "type": "git",
     "url": "https://github.com/Microsoft/TypeScript-Node-Starter"
   },
-  "author": "Bowden Kelly",
+  "author": "Mattia Natali",
   "license": "MIT",
   "scripts": {
     "start": "npm run serve",
@@ -41,7 +41,7 @@
     "express-session": "^1.15.6",
     "express-validator": "^4.3.0",
     "fbgraph": "^1.4.1",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.10",
     "lusca": "^1.5.2",
     "moment": "^2.22.2",
     "mongoose": "^4.13.11",

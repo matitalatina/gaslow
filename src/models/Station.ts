@@ -34,6 +34,7 @@ export type IStation = mongoose.Document & IStationRaw;
 
 export type IStationModel = Model<IStation> & {
   bulkUpsertById: (stations: IStationRaw[]) => Promise<BulkWriteOpResultObject>,
+  findNearestByCoordinates: (lat: number, lng: number, limit?: number) => Promise<IStation[]>,
 };
 
 const stationSchema = new mongoose.Schema({
@@ -80,6 +81,13 @@ stationSchema.statics.bulkUpsertById = function (stations: IStation[]) {
       }
     }));
   return (this as Model<IStation>).collection.bulkWrite(stationUpdates);
+};
+
+stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: number, limit: number = 50): Promise<IStation[]> {
+  return (this as IStationModel)
+    .find({ "location": { $near: { $geometry: { type: "Point", coordinates: [lng, lat] } } } })
+    .limit(limit)
+    .exec();
 };
 export const Station: IStationModel = (() => {
   try {
