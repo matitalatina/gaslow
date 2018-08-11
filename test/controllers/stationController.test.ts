@@ -12,14 +12,15 @@ describe("StationController", () => {
   });
 
   it("should update stations", () => {
-    const updateStationStub = sandbox.stub(StationService, "updateStationCollection");
+    const updateStationStub = sandbox.stub(StationService, "updateStationCollection").returns(Promise.resolve(undefined));
     const req: any = {};
     const res: any = {
       json: sandbox.stub(),
     };
-    updateStationCollection(req, res);
-    expect((res.json as sinon.SinonStub).calledOnce).to.be.true;
-    expect(updateStationStub.calledOnce).to.be.true;
+    return updateStationCollection(req, res).then(() => {
+      expect((res.json as sinon.SinonStub).calledOnce).to.be.true;
+      expect(updateStationStub.calledOnce).to.be.true;
+    });
   });
 
   it("should findNearestByCoordinates", () => {
