@@ -1,10 +1,10 @@
-import { IStation } from "./../../src/models/Station";
+import { IStationDocument } from "./../../src/models/Station";
 import moment from "moment";
 import { Station } from "../../src/models/Station";
 import { CsvStation } from "../../src/parsers/models/csvStation";
 import { CsvPrice } from "../../src/parsers/models/csvPrice";
 
-export function aStation(i: number = 1): IStation {
+export function aStation(i: number = 1): IStationDocument {
   return new Station({
     id: i,
     manager: "manager" + i,

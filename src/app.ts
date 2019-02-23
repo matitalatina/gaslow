@@ -2,7 +2,6 @@ import express from "express";
 import compression from "compression";  // compresses requests
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import mongo from "connect-mongo";
 import path from "path";
 import mongoose from "mongoose";
 import bluebird from "bluebird";
