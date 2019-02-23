@@ -1,25 +1,18 @@
 import express from "express";
 import compression from "compression";  // compresses requests
-import session from "express-session";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import mongo from "connect-mongo";
 import path from "path";
 import mongoose from "mongoose";
 import bluebird from "bluebird";
-import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
-
-const MongoStore = mongo(session);
+import { MONGODB_URI } from "./util/secrets";
 
 // Load environment variables from .env file, where API keys and passwords are configured
 dotenv.config({ path: ".env.example" });
 
 // Controllers (route handlers)
 import * as stationController from "./controllers/stationController";
-
-
-// API keys and Passport configuration
-import * as passportConfig from "./config/passport";
 
 // Create Express server
 const app = express();
@@ -38,9 +31,6 @@ mongoose.connect(mongoUrl, { useMongoClient: true }).then(
 app.set("port", process.env.PORT || 3000);
 app.use(compression());
 app.use(bodyParser.json());
-// app.use(expressValidator());
-// app.use(lusca.xframe("SAMEORIGIN"));
-// app.use(lusca.xssProtection(true));
 
 app.use(
   express.static(path.join(__dirname, "public"), { maxAge: 31557600000 })

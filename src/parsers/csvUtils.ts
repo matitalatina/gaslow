@@ -1,4 +1,5 @@
 import parse from "csv-parse";
+
 export function parseCsvSkip2Lines(csv: string): Promise<Array<string[]>> {
   return new Promise((resolve, reject) => {
     // We need to remove first two line in some way.

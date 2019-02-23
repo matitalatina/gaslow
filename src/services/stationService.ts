@@ -1,4 +1,4 @@
-import { IStation } from "../models/Station";
+import { IStationDocument } from "../models/Station";
 import { Station } from "../models/Station";
 import { StationConverter } from "../parsers/stationConverter";
 import { PriceParser } from "../parsers/priceParser";
@@ -20,11 +20,10 @@ export class StationService {
       .all([csvStationsPromise, csvPricesPromise])
       .then(([csvStations, csvPrices]) => {
         Station.bulkUpsertById(StationConverter.merge(csvStations, csvPrices));
-        return undefined;
       });
   }
 
-  static findNearestByCoordinates(lat: number, lng: number): Promise<IStation[]> {
+  static findNearestByCoordinates(lat: number, lng: number): Promise<IStationDocument[]> {
     return Station.findNearestByCoordinates(lat, lng);
   }
 }

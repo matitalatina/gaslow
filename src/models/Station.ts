@@ -1,4 +1,4 @@
-import { IStation } from "./Station";
+import { IStationDocument } from "./Station";
 import mongoose, { Model } from "mongoose";
 import { BulkWriteOpResultObject } from "mongodb";
 import { isNumber } from "lodash";
@@ -18,7 +18,7 @@ export type Price = {
   updatedAt: Date,
 };
 
-export type IStationRaw = {
+export type IStation = {
   id: number,
   manager: string,
   brand: string,
@@ -30,11 +30,11 @@ export type IStationRaw = {
   location: GeoJSON,
   prices: Price[],
 };
-export type IStation = mongoose.Document & IStationRaw;
+export type IStationDocument = mongoose.Document & IStation;
 
-export type IStationModel = Model<IStation> & {
-  bulkUpsertById: (stations: IStationRaw[]) => Promise<BulkWriteOpResultObject>,
-  findNearestByCoordinates: (lat: number, lng: number, limit?: number) => Promise<IStation[]>,
+export type IStationModel = Model<IStationDocument> & {
+  bulkUpsertById: (stations: IStation[]) => Promise<BulkWriteOpResultObject>,
+  findNearestByCoordinates: (lat: number, lng: number, limit?: number) => Promise<IStationDocument[]>,
 };
 
 const stationSchema = new mongoose.Schema({
@@ -64,7 +64,7 @@ const stationSchema = new mongoose.Schema({
 
 stationSchema.index({ "location": "2dsphere" });
 
-stationSchema.statics.bulkUpsertById = function (stations: IStation[]) {
+stationSchema.statics.bulkUpsertById = function (stations: IStationDocument[]) {
   const stationUpdates = stations
     .filter(s => {
       const hasValidCoords = isNumber(s.location.coordinates[0]) && isNumber(s.location.coordinates[1]);
@@ -80,10 +80,10 @@ stationSchema.statics.bulkUpsertById = function (stations: IStation[]) {
         upsert: true,
       }
     }));
-  return (this as Model<IStation>).collection.bulkWrite(stationUpdates);
+  return (this as IStationModel).collection.bulkWrite(stationUpdates);
 };
 
-stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: number, limit: number = 50): Promise<IStation[]> {
+stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: number, limit: number = 50): Promise<IStationDocument[]> {
   return (this as IStationModel)
     .find({ "location": { $near: { $geometry: { type: "Point", coordinates: [lng, lat] } } } })
     .limit(limit)
@@ -91,8 +91,8 @@ stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: num
 };
 export const Station: IStationModel = (() => {
   try {
-    return mongoose.model<IStation, IStationModel>("Station");
+    return mongoose.model<IStationDocument, IStationModel>("Station");
   } catch (e) {
-    return mongoose.model<IStation, IStationModel>("Station", stationSchema);
+    return mongoose.model<IStationDocument, IStationModel>("Station", stationSchema);
   }
 })();
