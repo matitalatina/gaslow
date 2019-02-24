@@ -12,7 +12,7 @@
     "s3BucketName": "gaslow-backend",
     "region": "eu-west-1",
     "cloudFormationStackName": "GaslowServerlessStack",
-    "functionName": "GaslowLambdaBackend",
+    "functionName": "GaslowServerlessStack-GaslowLambdaBackend-3JBO773U30Q",
     "accountId": "636133167487"
   },
   "scripts": {
@@ -43,6 +43,7 @@
     "setup": "npm install && (aws s3api get-bucket-location --bucket $npm_package_config_s3BucketName --region $npm_package_config_region || npm run create-bucket) && npm run build-package-deploy"
   },
   "dependencies": {
+    "aws-serverless-express": "^3.3.3",
     "async": "^2.6.2",
     "bluebird": "^3.5.3",
     "body-parser": "^1.18.3",
