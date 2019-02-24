@@ -7,9 +7,6 @@ services:
 
 jobs:
   include:
-    - stage: build
-      script:
-        - npm run build
     - stage: test
       script:
         - npm run test
@@ -27,6 +24,7 @@ jobs:
         skip_cleanup: true
       before_deploy:
         - openssl aes-256-cbc -K $encrypted_faebc38c4945_key -iv $encrypted_faebc38c4945_iv -in .env.enc -out .env -d
+        - npm run build
 
 cache:
   directories:
