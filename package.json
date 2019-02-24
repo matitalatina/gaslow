@@ -70,7 +70,6 @@
     "chai": "^4.2.0",
     "concurrently": "^3.6.1",
     "jest": "^24.1.0",
-    "node-sass": "^4.11.0",
     "nodemon": "^1.18.10",
     "sinon": "^7.2.4",
     "supertest": "^3.4.2",
