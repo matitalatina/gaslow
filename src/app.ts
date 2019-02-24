@@ -31,10 +31,6 @@ app.set("port", process.env.PORT || 3000);
 app.use(compression());
 app.use(bodyParser.json());
 
-app.use(
-  express.static(path.join(__dirname, "public"), { maxAge: 31557600000 })
-);
-
 app.post("/stations/update", stationController.updateStationCollection);
 app.get("/stations/find/location", stationController.findNearestByCoordinates);
 
