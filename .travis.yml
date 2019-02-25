@@ -30,6 +30,8 @@ jobs:
       before_install:
         - pip install --user awscli
         - export PATH=$PATH:$HOME/.local/bin
+      install:
+        - npm install
       before_deploy:
         - openssl aes-256-cbc -K $encrypted_faebc38c4945_key -iv $encrypted_faebc38c4945_iv -in .env.enc -out .env -d
       deploy:
