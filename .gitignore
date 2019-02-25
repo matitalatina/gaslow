@@ -37,5 +37,9 @@ Thumbs.db
 # Ignore built ts files
 dist/**/*
 
+.cache/
+
+lambda-invoke-response.json
+
 packaged-sam.yaml
 

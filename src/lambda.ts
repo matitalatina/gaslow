@@ -1,5 +1,5 @@
-const awsServerlessExpress = require(process.env.NODE_ENV === "test" ? "../../index" : "aws-serverless-express");
-const app = require("./app");
+import * as awsServerlessExpress from "aws-serverless-express";
+import app from "./app";
 
 // NOTE: If you get ERR_CONTENT_DECODING_FAILED in your browser, this is likely
 // due to a compressed response (e.g. gzip) which has not been handled correctly

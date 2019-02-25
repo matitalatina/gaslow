@@ -17,7 +17,8 @@
   },
   "scripts": {
     "start": "npm run serve",
-    "build": "npm run build-ts && npm run tslint",
+    "build-serverless": "parcel build src/lambda.ts --target node && cp .env dist/",
+    "build": "parcel build src/server.ts --target node",
     "serve": "node dist/server.js",
     "watch-node": "nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
@@ -38,7 +39,7 @@
     "delete-bucket": "aws s3 rb s3://$npm_package_config_s3BucketName --region $npm_package_config_region",
     "package": "aws cloudformation package --template ./serverless/cloudformation.yaml --s3-bucket $npm_package_config_s3BucketName --output-template packaged-sam.yaml --region $npm_package_config_region",
     "deploy": "aws cloudformation deploy --template-file packaged-sam.yaml --stack-name $npm_package_config_cloudFormationStackName --capabilities CAPABILITY_IAM --region $npm_package_config_region",
-    "build-package-deploy": "npm run build && npm run package && npm run deploy",
+    "build-package-deploy": "npm run build-serverless && npm run package && npm run deploy",
     "delete-stack": "aws cloudformation delete-stack --stack-name $npm_package_config_cloudFormationStackName --region $npm_package_config_region",
     "setup": "npm install && (aws s3api get-bucket-location --bucket $npm_package_config_s3BucketName --region $npm_package_config_region || npm run create-bucket) && npm run build-package-deploy"
   },
@@ -90,6 +91,7 @@
     "concurrently": "^3.6.1",
     "jest": "^24.1.0",
     "nodemon": "^1.18.10",
+    "parcel-bundler": "^1.11.0",
     "sinon": "^7.2.4",
     "supertest": "^3.4.2",
     "ts-jest": "^24.0.0",

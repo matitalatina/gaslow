@@ -3,7 +3,10 @@
     "//body": "{\"name\": \"Sam\"}",
     "path": "/stations/find/location",
     "resource": "/{proxy+}",
-    "queryStringParameters": {},
+    "queryStringParameters": {
+        "lat": 45.464203,
+        "lng": 9.189982
+    },
     "pathParameters": {
         "proxy": "users"
     },

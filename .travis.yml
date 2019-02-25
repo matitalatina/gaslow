@@ -11,6 +11,11 @@ jobs:
       script:
         - npm run test
     - stage: deploy
+      name: Deploy on Heroku
+      script: skip
+      before_deploy:
+        - openssl aes-256-cbc -K $encrypted_faebc38c4945_key -iv $encrypted_faebc38c4945_iv -in .env.enc -out .env -d
+        - npm run build
       deploy:
         provider: heroku
         api_key:
@@ -22,9 +27,20 @@ jobs:
         env:
           - NODE_ENV=production
         skip_cleanup: true
+    - name: Deploy on AWS (Serverless)
+      before_install:
+        - pip install --user awscli
+        - export PATH=$PATH:$HOME/.local/bin
+      script: skip
       before_deploy:
         - openssl aes-256-cbc -K $encrypted_faebc38c4945_key -iv $encrypted_faebc38c4945_iv -in .env.enc -out .env -d
-        - npm run build
+      deploy:
+        provider: script
+        on:
+          repo: matitalatina/gaslow
+          branch: master
+        script: npm run build-package-deploy
+      skip_cleanup: true
 
 cache:
   directories:
