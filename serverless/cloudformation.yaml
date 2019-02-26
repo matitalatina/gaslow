@@ -53,12 +53,12 @@ Resources:
   GaslowLambdaBackend:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../
-      Handler: dist/lambda.handler
-      MemorySize: 1024
+      CodeUri: ../dist/
+      Handler: lambda.handler
+      MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs8.10
-      Timeout: 30
+      Timeout: 5
       Environment:
         Variables:
           NODE_ENV: production

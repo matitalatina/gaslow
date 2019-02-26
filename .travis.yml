@@ -30,14 +30,19 @@ jobs:
       before_install:
         - pip install --user awscli
         - export PATH=$PATH:$HOME/.local/bin
+      script:
+        - npm install
+        - npm run build-serverless
       before_deploy:
         - openssl aes-256-cbc -K $encrypted_faebc38c4945_key -iv $encrypted_faebc38c4945_iv -in .env.enc -out .env -d
+        - npm prune --production
+        - cp -r node_modules dist/
       deploy:
         provider: script
         on:
           repo: matitalatina/gaslow
           branch: master
-        script: npm run build-package-deploy
+        script: npm run package-deploy
         skip_cleanup: true
 
 cache:
