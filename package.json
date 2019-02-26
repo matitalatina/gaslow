@@ -17,7 +17,7 @@
   },
   "scripts": {
     "start": "npm run serve",
-    "build-serverless": "parcel build src/lambda.ts --target node && cp .env dist/",
+    "build-serverless": "parcel build src/lambda.ts --target node",
     "build": "parcel build src/server.ts --target node",
     "serve": "node dist/server.js",
     "watch-node": "nodemon dist/server.js",
