@@ -1,7 +1,13 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Serverless Express Application/API powered by API Gateway and Lambda
+Description: Gaslow Serverless Stack
+Parameters:
+  ApiKeyValue:
+    Type: String
+    Description: Value of the Api Key to use in production
+    MinLength: 30
+    ConstraintDescription: Should be at least 30 characters
 Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
@@ -10,6 +16,46 @@ Resources:
       StageName: prod
       Variables:
         ServerlessExpressLambdaFunctionName: !Ref GaslowLambdaBackend
+  
+  ApiKey: 
+    Type: AWS::ApiGateway::ApiKey
+    Properties: 
+      Name: !Join 
+        - ''
+        - - !Ref AWS::StackName
+          - '-apikey'
+      Description: 'Api Key for Gaslow App'
+      Enabled: true
+      GenerateDistinctId: false
+      Value: !Ref ApiKeyValue
+
+  ApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      ApiStages: 
+      - ApiId: !Ref ApiGatewayApi
+        Stage: prod     
+      Description: !Join
+        - ' '
+        - - !Ref AWS::StackName
+          - usage plan
+      Quota:
+        Limit: 200000
+        Period: MONTH
+      Throttle:
+        BurstLimit: 10
+        RateLimit: 10
+      UsagePlanName: !Join
+        - ''
+        - - !Ref AWS::StackName
+          - '-usage-plan'
+  
+  ApiUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref ApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref ApiUsagePlan
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
