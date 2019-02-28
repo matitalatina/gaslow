@@ -20,10 +20,6 @@ Resources:
   ApiKey: 
     Type: AWS::ApiGateway::ApiKey
     Properties: 
-      Name: !Join 
-        - ''
-        - - !Ref AWS::StackName
-          - '-apikey'
       Description: 'Api Key for Gaslow App'
       Enabled: true
       GenerateDistinctId: false
