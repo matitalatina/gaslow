@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { IStationDocument } from "./../../src/models/Station";
 import moment from "moment";
 import { Station } from "../../src/models/Station";
@@ -50,4 +51,7 @@ export function aCsvPrice(i: number = 1): CsvPrice {
     isSelf: true,
     updatedAt: moment(123).toDate(),
   };
+}
+export function aGoogleMapsApiDirectionResponse(): string {
+  return fs.readFileSync(__dirname + "/../assets/googleMapsApiDirectionResponse.json", "utf-8");
 }
