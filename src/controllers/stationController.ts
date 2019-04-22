@@ -1,9 +1,16 @@
 import { StationService } from "../services/stationService";
+import { TYPES } from "../../src/di/types";
 import { Request, Response } from "express";
 import { interfaces, controller, httpGet, httpPost, request, response } from "inversify-express-utils";
+import { inject } from "inversify";
 
 @controller("/stations")
 export class StationsController implements interfaces.Controller {
+  constructor(
+    @inject(TYPES.StationService) private stationService: StationService,
+  ) {
+
+  }
   @httpPost("/update")
   updateStationCollection(@request() req: Request, @response() res: Response): Promise<void> {
     return StationService.updateStationCollection().then(() => {
@@ -16,5 +23,16 @@ export class StationsController implements interfaces.Controller {
     return StationService.findNearestByCoordinates(req.query.lat, req.query.lng).then((stations) => {
       res.json({ items: stations });
     });
+  }
+
+  @httpGet("/find/route")
+  async findOnTheRoute(@request() req: Request, @response() res: Response) {
+    const [fromLat, fromLng] = req.query.from.split(",").map((n: string) => parseFloat(n));
+    const [toLat, toLng] = req.query.to.split(",").map((n: string) => parseFloat(n));
+    const stations = await this.stationService.findOnTheRoute(
+      {lat: fromLat, lng: fromLng},
+      {lat: toLat, lng: toLng},
+    );
+    res.json({items: stations});
   }
 }

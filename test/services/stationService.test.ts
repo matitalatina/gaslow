@@ -4,15 +4,30 @@ import { PriceParser } from "./../../src/parsers/priceParser";
 import { StringDownloader } from "./../../src/fetchers/stringDownloader";
 import { expect } from "chai";
 import { createSandbox } from "sinon";
+import { mock, reset, instance, when } from "ts-mockito";
 import StationParser from "../../src/parsers/stationParser";
 import { aStation, aCsvPrice, aCsvStation } from "../utils/fixtures";
 import { StationConverter } from "../../src/parsers/stationConverter";
+import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient";
+import GeoUtil from "../../src/util/geo";
+import { polygon } from "@turf/helpers";
 
 const sandbox = createSandbox();
+const mockGoogleMapsClient = mock(GoogleMapsClient);
+const mockGeoUtil = mock(GeoUtil);
+let service: StationService;
 
 describe("StationService", () => {
+  beforeEach(() => {
+    service = new StationService(
+      instance(mockGoogleMapsClient),
+      instance(mockGeoUtil),
+    );
+  });
+
   afterEach(() => {
     sandbox.restore();
+    reset(mockGoogleMapsClient);
   });
 
   it("should be created", () => {
@@ -58,10 +73,26 @@ describe("StationService", () => {
   it("should find nearest stations given lat and lng", () => {
     const returnedStation = aStation();
     const stationFind = sandbox.stub(Station, "findNearestByCoordinates")
-      .returns(Promise.resolve([returnedStation]));
+      .resolves([returnedStation]);
     return StationService.findNearestByCoordinates(1.0, 2.0)
       .then(([station]: IStation[]) => {
         expect(station.id).to.be.eq(returnedStation.id);
       });
+  });
+
+  it("should find on the route", async () => {
+    const returnedStation = aStation();
+    const from = {lat: 1.0, lng: 2.0};
+    const to = {lat: 3.0, lng: 4.0};
+    const polyline = "encoded_polyline";
+    const featurePolygon = polygon([[[-5, 52], [-4, 56], [-2, 51], [-7, 54], [-5, 52]]], { name: "poly1" }).geometry;
+    when(mockGoogleMapsClient.getPolylineByRoute(from, to)).thenResolve(polyline);
+    when(mockGeoUtil.fromPolylineToPolygon(polyline)).thenReturn(featurePolygon);
+    const stubFindWithinPolygon = sandbox.stub(Station, "findWithinPolygon")
+      .resolves([returnedStation]);
+
+    await service.findOnTheRoute(from, to);
+
+    expect(stubFindWithinPolygon.getCall(0).args[0]).to.be.eql(featurePolygon);
   });
 });

@@ -13,7 +13,7 @@ jobs:
     - stage: deploy
       name: Deploy on Heroku
       before_deploy:
-        - openssl aes-256-cbc -K $encrypted_faebc38c4945_key -iv $encrypted_faebc38c4945_iv -in .env.enc -out .env -d
+        - openssl aes-256-cbc -K $encrypted_997c662c0672_key -iv $encrypted_997c662c0672_iv -in .env.enc -out .env -d
         - npm run build
       deploy:
         provider: heroku
@@ -34,7 +34,7 @@ jobs:
         - npm install
         - npm run build-serverless
       before_deploy:
-        - openssl aes-256-cbc -K $encrypted_faebc38c4945_key -iv $encrypted_faebc38c4945_iv -in .env.enc -out .env -d
+        - openssl aes-256-cbc -K $encrypted_997c662c0672_key -iv $encrypted_997c662c0672_iv -in .env.enc -out .env -d
         - npm prune --production
         - cp -r .env node_modules dist/
       deploy:

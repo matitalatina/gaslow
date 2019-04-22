@@ -1,13 +1,13 @@
-import { flatten } from "lodash";
 import axios from "axios";
+import { injectable } from "inversify";
 import ILatLng from "../models/ILatLng";
-import IStep from "../models/IStep";
-import { Router } from "express";
+import { GOOGLE_API_KEY } from "../util/secrets";
 
+@injectable()
 export class GoogleMapsClient {
-  async getPolygonByRoute(from: ILatLng, to: ILatLng): Promise<string> {
+  async getPolylineByRoute(from: ILatLng, to: ILatLng): Promise<string> {
     const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/directions/json?origin=${from.lat},${from.lng}&destination=${to.lat},${to.lng}&key=API_KEY`
+      `https://maps.googleapis.com/maps/api/directions/json?origin=${from.lat},${from.lng}&destination=${to.lat},${to.lng}&key=${GOOGLE_API_KEY}`
     );
     const routes = response.data.routes;
 

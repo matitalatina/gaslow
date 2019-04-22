@@ -2,6 +2,7 @@ import { IStationDocument } from "./Station";
 import mongoose, { Model } from "mongoose";
 import { BulkWriteOpResultObject } from "mongodb";
 import { isNumber } from "lodash";
+import { Polygon } from "@turf/helpers";
 
 export enum GeoType {
   Point = "Point",
@@ -35,6 +36,7 @@ export type IStationDocument = mongoose.Document & IStation;
 export type IStationModel = Model<IStationDocument> & {
   bulkUpsertById: (stations: IStation[]) => Promise<BulkWriteOpResultObject>,
   findNearestByCoordinates: (lat: number, lng: number, limit?: number) => Promise<IStationDocument[]>,
+  findWithinPolygon: (geom: Polygon, limit?: number) => Promise<IStationDocument[]>,
 };
 
 const stationSchema = new mongoose.Schema({
@@ -86,6 +88,13 @@ stationSchema.statics.bulkUpsertById = function (stations: IStationDocument[]) {
 stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: number, limit: number = 50): Promise<IStationDocument[]> {
   return (this as IStationModel)
     .find({ "location": { $near: { $geometry: { type: "Point", coordinates: [lng, lat] } } } })
+    .limit(limit)
+    .exec();
+};
+
+stationSchema.statics.findWithinPolygon = function (geom: Polygon, limit: number = 50): Promise<IStationDocument[]> {
+  return (this as IStationModel)
+    .find({ "location": { $geoWithin: { $geometry: geom } } })
     .limit(limit)
     .exec();
 };
