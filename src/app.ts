@@ -10,10 +10,12 @@ import { MONGODB_URI } from "./util/secrets";
 dotenv.config({ path: ".env.example" });
 
 // Controllers (route handlers)
-import * as stationController from "./controllers/stationController";
+import "./controllers/stationController";
+import { InversifyExpressServer } from "inversify-express-utils";
+import { myContainer } from "./di/inversify.config";
 
 // Create Express server
-const app = express();
+const server = new InversifyExpressServer(myContainer);
 
 // Connect to MongoDB
 const mongoUrl = MONGODB_URI;
@@ -25,12 +27,12 @@ mongoose.connect(mongoUrl, { useMongoClient: true }).then(
   // process.exit();
 });
 
+server.setConfig((app) => {
+  app.set("port", process.env.PORT || 3000);
+  app.use(compression());
+  app.use(bodyParser.json());
+});
+
 // Express configuration
-app.set("port", process.env.PORT || 3000);
-app.use(compression());
-app.use(bodyParser.json());
-
-app.post("/stations/update", stationController.updateStationCollection);
-app.get("/stations/find/location", stationController.findNearestByCoordinates);
-
+const app = server.build();
 export default app;

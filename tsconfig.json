@@ -6,8 +6,12 @@
         "noImplicitAny": true,
         "moduleResolution": "node",
         "sourceMap": true,
+        "types": ["reflect-metadata", "jest"],
+        "lib": ["es6"],
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "outDir": "dist",
-        "baseUrl": ".",
+        "baseUrl": ".src/",
         "paths": {
             "*": [
                 "node_modules/*",

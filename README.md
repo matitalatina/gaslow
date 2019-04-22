@@ -12,7 +12,4 @@ More information [here](https://github.com/awslabs/aws-serverless-express/tree/m
 
 - Test NULL coords in parseCSVStation.
 
-636133167487
-gaslow-backend
-eu-west-1
-GaslowLambdaBackend
+0.01 -> 1113m

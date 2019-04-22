@@ -1,12 +1,19 @@
 import { expect } from "chai";
 import { createSandbox, assert, SinonStub } from "sinon";
 import { StationService } from "../../src/services/stationService";
-import { updateStationCollection, findNearestByCoordinates } from "../../src/controllers/stationController";
+import { StationsController } from "../../src/controllers/stationController";
 import { aStation } from "../utils/fixtures";
+import { cleanUpMetadata } from "inversify-express-utils";
 
 const sandbox = createSandbox();
 
+const controller = new StationsController();
+
 describe("StationController", () => {
+  beforeEach(() => {
+    cleanUpMetadata();
+  });
+
   afterEach(() => {
     sandbox.restore();
   });
@@ -17,7 +24,7 @@ describe("StationController", () => {
     const res: any = {
       json: sandbox.stub(),
     };
-    return updateStationCollection(req, res).then(() => {
+    return controller.updateStationCollection(req, res).then(() => {
       expect((res.json as sinon.SinonStub).calledOnce).to.be.true;
       expect(updateStationStub.calledOnce).to.be.true;
     });
@@ -34,7 +41,7 @@ describe("StationController", () => {
     const res: any = {
       json: sandbox.stub(),
     };
-    return findNearestByCoordinates(req, res)
+    return controller.findNearestByCoordinates(req, res)
       .then(() => {
         const jsonStub = (res.json as SinonStub);
         expect(jsonStub.calledOnce).to.be.true;

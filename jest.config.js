@@ -13,4 +13,7 @@ module.exports = {
 	],
 	testEnvironment: 'node',
 	preset: 'ts-jest',
+	setupFiles: [
+		"reflect-metadata",
+	]
 };
