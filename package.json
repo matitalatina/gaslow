@@ -47,6 +47,7 @@
     "@mapbox/polyline": "^1.0.0",
     "@turf/buffer": "^5.1.5",
     "@turf/turf": "^5.1.6",
+    "@types/mapbox__polyline": "^1.0.0",
     "async": "^2.6.2",
     "aws-serverless-express": "^3.3.3",
     "axios": "^0.18.0",

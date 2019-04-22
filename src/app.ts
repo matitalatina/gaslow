@@ -1,4 +1,4 @@
-import express from "express";
+import "reflect-metadata";
 import compression from "compression";  // compresses requests
 import bodyParser from "body-parser";
 import dotenv from "dotenv";

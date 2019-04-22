@@ -1,5 +1,4 @@
 import { Container } from "inversify";
-import "reflect-metadata";
 import { GoogleMapsClient } from "../clients/GoogleMapsClient";
 import { StationService } from "../services/stationService";
 import GeoUtil from "../util/geo";
