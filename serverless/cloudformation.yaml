@@ -100,7 +100,7 @@ Resources:
       MemorySize: 512
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs8.10
-      Timeout: 5
+      Timeout: 8
       Environment:
         Variables:
           NODE_ENV: production
