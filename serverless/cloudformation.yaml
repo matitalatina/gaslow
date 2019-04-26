@@ -97,7 +97,7 @@ Resources:
     Properties:
       CodeUri: ../dist/
       Handler: lambda.handler
-      MemorySize: 128
+      MemorySize: 512
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs8.10
       Timeout: 5
