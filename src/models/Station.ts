@@ -92,7 +92,7 @@ stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: num
     .exec();
 };
 
-stationSchema.statics.findWithinPolygon = function (geom: Polygon, limit: number = 50): Promise<IStationDocument[]> {
+stationSchema.statics.findWithinPolygon = function (geom: Polygon, limit: number = 300): Promise<IStationDocument[]> {
   return (this as IStationModel)
     .find({ "location": { $geoWithin: { $geometry: geom } } })
     .limit(limit)
