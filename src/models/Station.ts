@@ -12,8 +12,15 @@ export type GeoJSON = {
   coordinates: number[],
 };
 
+export enum FuelTypeEnum {
+  GASOLINE = "GASOLINE",
+  DIESEL = "DIESEL",
+  OTHER = "OTHER",
+}
+
 export type Price = {
   fuelType: String,
+  fuelTypeEnum?: FuelTypeEnum,
   price: number,
   isSelf: boolean,
   updatedAt: Date,
@@ -39,6 +46,27 @@ export type IStationModel = Model<IStationDocument> & {
   findWithinPolygon: (geom: Polygon, limit?: number) => Promise<IStationDocument[]>,
 };
 
+const priceSchema = new mongoose.Schema({
+  fuelType: { type: String, required: true },
+  price: { type: Number, required: true },
+  isSelf: { type: Boolean, required: true },
+  updatedAt: { type: Date, required: true },
+});
+
+priceSchema.virtual("fuelTypeEnum").get(function() {
+  if (!this.fuelType) {
+    return FuelTypeEnum.OTHER;
+  }
+  const fuelTypeLower: String = this.fuelType.toLowerCase();
+  if (fuelTypeLower.includes("enzin")) {
+    return FuelTypeEnum.GASOLINE;
+  }
+  else if (["asolio", "iesel", "uper"].some((s) => fuelTypeLower.includes(s))) {
+    return FuelTypeEnum.DIESEL;
+  }
+  return FuelTypeEnum.OTHER;
+});
+
 const stationSchema = new mongoose.Schema({
   id: { type: Number, required: true, index: true, unique: true },
   manager: String,
@@ -56,12 +84,7 @@ const stationSchema = new mongoose.Schema({
     },
     coordinates: [Number],
   },
-  prices: [{
-    fuelType: { type: String, required: true },
-    price: { type: Number, required: true },
-    isSelf: { type: Boolean, required: true },
-    updatedAt: { type: Date, required: true },
-  }],
+  prices: [priceSchema],
 }, { timestamps: true });
 
 stationSchema.index({ "location": "2dsphere" });
