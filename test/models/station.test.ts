@@ -114,6 +114,14 @@ describe("Station", () => {
       .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).to.be.eq(FuelTypeEnum.OTHER)));
   });
 
+  it("should add fuelTypeEnum to JSON", () => {
+    const station = aStation();
+    station.prices[0].fuelType = "Diesel";
+    return Station.bulkUpsertById([station])
+      .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
+      .then((ss) => expect(ss[0].toJSON().prices[0].fuelTypeEnum).to.be.eq("DIESEL"));
+  });
+
   it.skip("should work (full path)", () => {
     return StationService.updateStationCollection()
       .catch((err) => {

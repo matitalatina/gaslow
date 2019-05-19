@@ -51,7 +51,7 @@ const priceSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   isSelf: { type: Boolean, required: true },
   updatedAt: { type: Date, required: true },
-});
+}, { toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
 priceSchema.virtual("fuelTypeEnum").get(function() {
   if (!this.fuelType) {
