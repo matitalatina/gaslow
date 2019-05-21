@@ -1,10 +1,11 @@
 import { StationService } from "./../../src/services/stationService";
 import { Station, IStation, FuelTypeEnum } from "./../../src/models/Station";
-import { aStation } from "../utils/fixtures";
+import { aStation, aPrice } from "../utils/fixtures";
 
 import chai from "chai";
 import { connectMongoTest, closeMongoTest } from "../utils/mongo";
 import { range } from "lodash";
+import moment = require("moment");
 
 const expect = chai.expect;
 
@@ -63,27 +64,46 @@ describe("Station", () => {
       });
   });
 
-  it("should retrieve nearest stations by coordinates", () => {
-    const stations = range(4)
-      .map(aStation);
-    return Station.bulkUpsertById(stations)
-      .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-      .then((stations: IStation[]) => {
-        expect(stations.length).to.be.eq(2);
-        expect(stations[0].id).to.be.eq(1);
-      });
-  });
+  describe("findNearestByCoordinates", () => {
+    it("should retrieve nearest stations by coordinates", () => {
+      const stations = range(4)
+        .map(aStation);
+      return Station.bulkUpsertById(stations)
+        .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
+        .then((stations: IStation[]) => {
+          expect(stations.length).to.be.eq(2);
+          expect(stations[0].id).to.be.eq(1);
+        });
+    });
 
-  it("should populate fuelTypeEnum for gasoline", () => {
-    const stations = range(5).map(aStation);
-    stations[0].prices[0].fuelType = "Benzina";
-    stations[1].prices[0].fuelType = "BENZINA";
-    stations[2].prices[0].fuelType = "benzina";
-    stations[3].prices[0].fuelType = "Benzina HQ";
-    stations[4].prices[0].fuelType = "Hi-Q Benzina";
-    return Station.bulkUpsertById(stations)
-      .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-      .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).to.be.eq(FuelTypeEnum.GASOLINE)));
+    it("should populate fuelTypeEnum for gasoline", () => {
+      const stations = range(5).map(aStation);
+      stations[0].prices[0].fuelType = "Benzina";
+      stations[1].prices[0].fuelType = "BENZINA";
+      stations[2].prices[0].fuelType = "benzina";
+      stations[3].prices[0].fuelType = "Benzina HQ";
+      stations[4].prices[0].fuelType = "Hi-Q Benzina";
+      return Station.bulkUpsertById(stations)
+        .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
+        .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).to.be.eq(FuelTypeEnum.GASOLINE)));
+    });
+
+    it("should filter out stations that have too old prices", () => {
+      const station = aStation();
+      station.prices[0].updatedAt = moment().add(-7, "months").toDate();
+      return Station.bulkUpsertById([station])
+        .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
+        .then((ss) => expect(ss.length).to.be.eq(0));
+    });
+
+    it("should not filter out stations that have at least one price updated", () => {
+      const station = aStation();
+      station.prices.push({...aPrice(), updatedAt: moment().add(-4, "months").toDate()});
+      station.prices[0].updatedAt = moment().add(-7, "months").toDate();
+      return Station.bulkUpsertById([station])
+        .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
+        .then((ss) => expect(ss.length).to.be.eq(1));
+    });
   });
 
   it("should populate fuelTypeEnum for diesel", () => {
@@ -121,6 +141,7 @@ describe("Station", () => {
       .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
       .then((ss) => expect(ss[0].toJSON().prices[0].fuelTypeEnum).to.be.eq("DIESEL"));
   });
+
 
   it.skip("should work (full path)", () => {
     return StationService.updateStationCollection()

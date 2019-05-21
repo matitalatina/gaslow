@@ -3,6 +3,7 @@ import mongoose, { Model } from "mongoose";
 import { BulkWriteOpResultObject } from "mongodb";
 import { isNumber } from "lodash";
 import { Polygon } from "@turf/helpers";
+import moment = require("moment");
 
 export enum GeoType {
   Point = "Point",
@@ -53,7 +54,7 @@ const priceSchema = new mongoose.Schema({
   updatedAt: { type: Date, required: true },
 }, { toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
-priceSchema.virtual("fuelTypeEnum").get(function() {
+priceSchema.virtual("fuelTypeEnum").get(function () {
   if (!this.fuelType) {
     return FuelTypeEnum.OTHER;
   }
@@ -66,6 +67,10 @@ priceSchema.virtual("fuelTypeEnum").get(function() {
   }
   return FuelTypeEnum.OTHER;
 });
+
+function filterByPriceUpdatedAt(updatedAt: Date) {
+  return { "prices.updatedAt": { "$gte": updatedAt } };
+}
 
 const stationSchema = new mongoose.Schema({
   id: { type: Number, required: true, index: true, unique: true },
@@ -108,16 +113,22 @@ stationSchema.statics.bulkUpsertById = function (stations: IStationDocument[]) {
   return (this as IStationModel).collection.bulkWrite(stationUpdates);
 };
 
-stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: number, limit: number = 50): Promise<IStationDocument[]> {
+stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: number, limit: number = 100): Promise<IStationDocument[]> {
   return (this as IStationModel)
-    .find({ "location": { $near: { $geometry: { type: "Point", coordinates: [lng, lat] } } } })
+    .find({
+      "location": { $near: { $geometry: { type: "Point", coordinates: [lng, lat] } } },
+      ...filterByPriceUpdatedAt(moment().add(-6, "months").toDate()),
+    })
     .limit(limit)
     .exec();
 };
 
 stationSchema.statics.findWithinPolygon = function (geom: Polygon, limit: number = 300): Promise<IStationDocument[]> {
   return (this as IStationModel)
-    .find({ "location": { $geoWithin: { $geometry: geom } } })
+    .find({
+      "location": { $geoWithin: { $geometry: geom } },
+      ...filterByPriceUpdatedAt(moment().add(-6, "months").toDate()),
+    })
     .limit(limit)
     .exec();
 };
