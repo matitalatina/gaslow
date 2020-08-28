@@ -61,7 +61,7 @@
     "express": "^4.16.4",
     "inversify": "^5.0.1",
     "inversify-express-utils": "^6.3.2",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.19",
     "lusca": "^1.6.1",
     "moment": "^2.24.0",
     "mongoose": "^5.10.1",
