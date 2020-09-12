@@ -106,7 +106,7 @@ stationSchema.statics.bulkUpsertById = function (stations: IStationDocument[]) {
     .map(station => ({
       updateOne: {
         filter: { id: station.id },
-        update: station,
+        update: { $set: station },
         upsert: true,
       }
     }));
