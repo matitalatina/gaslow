@@ -98,7 +98,7 @@ describe("Station", () => {
 
     it("should not filter out stations that have at least one price updated", () => {
       const station = aStation();
-      station.prices.push({...aPrice(), updatedAt: moment().add(-4, "months").toDate()});
+      station.prices.push({...aPrice(), updatedAt: moment().add(-1, "months").toDate()});
       station.prices[0].updatedAt = moment().add(-7, "months").toDate();
       return Station.bulkUpsertById([station])
         .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))

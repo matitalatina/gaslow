@@ -1,6 +1,6 @@
 import { StationConverter } from "./../../src/parsers/stationConverter";
 import chai from "chai";
-import { IStation } from "./../../src/models/Station";
+import { IStation, Price } from "./../../src/models/Station";
 import moment from "moment";
 import { CsvPrice } from "./../../src/parsers/models/csvPrice";
 import { CsvStation } from "./../../src/parsers/models/csvStation";
@@ -50,11 +50,11 @@ describe("StationConverter", () => {
     expect(firstStation.location.coordinates[0]).to.be.eq(2.0);
 
     const secondStation = stations[1];
-    const price = find(secondStation.prices, {
+    const price = (find(secondStation.prices, {
       fuelType: "fuelType102",
       price: 102,
       isSelf: true,
-    });
+    }) as Price);
     expect(moment(price.updatedAt).isSame(moment(102))).to.be.true;
   });
 });
