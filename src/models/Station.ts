@@ -117,7 +117,7 @@ stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: num
   return (this as IStationModel)
     .find({
       "location": { $near: { $geometry: { type: "Point", coordinates: [lng, lat] } } },
-      ...filterByPriceUpdatedAt(moment().add(-2, "months").toDate()),
+      ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
     })
     .limit(limit)
     .exec();
@@ -127,7 +127,7 @@ stationSchema.statics.findWithinPolygon = function (geom: Polygon, limit: number
   return (this as IStationModel)
     .find({
       "location": { $geoWithin: { $geometry: geom } },
-      ...filterByPriceUpdatedAt(moment().add(-2, "months").toDate()),
+      ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
     })
     .limit(limit)
     .exec();
