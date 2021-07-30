@@ -17,8 +17,8 @@ export class StationService {
   ) {
 
   }
-  static pricesSource: string = "https://www.sviluppoeconomico.gov.it/images/exportCSV/prezzo_alle_8.csv";
-  static stationsSource: string = "https://www.sviluppoeconomico.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
+  static pricesSource: string = "https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv";
+  static stationsSource: string = "https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
 
   static updateStationCollection(): Promise<void> {
     const csvStationsPromise = StringDownloader

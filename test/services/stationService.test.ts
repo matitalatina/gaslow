@@ -35,8 +35,8 @@ describe("StationService", () => {
   });
 
   it("should have correct sources", () => {
-    expect(StationService.pricesSource).to.be.eq("https://www.sviluppoeconomico.gov.it/images/exportCSV/prezzo_alle_8.csv");
-    expect(StationService.stationsSource).to.be.eq("https://www.sviluppoeconomico.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv");
+    expect(StationService.pricesSource).to.be.eq("https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv");
+    expect(StationService.stationsSource).to.be.eq("https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv");
   });
 
   it("should download and update DB with new data", () => {
