@@ -12,9 +12,15 @@ dotenv.config({ path: ".env.example" });
 import "./controllers/stationController";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { myContainer } from "./di/inversify.config";
+import { NextFunction, Request, Response } from "express";
 
 // Create Express server
 const server = new InversifyExpressServer(myContainer);
+
+const jsonErrorHandler = async (err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.log('asdsadas')
+  res.status(500).json({ error: err });
+}
 
 // Connect to MongoDB
 const mongoUrl = MONGODB_URI;
@@ -33,4 +39,5 @@ server.setConfig((app) => {
 
 // Express configuration
 const app = server.build();
+app.use(jsonErrorHandler);
 export default app;
