@@ -2,12 +2,10 @@ import { StationService } from "./../../src/services/stationService";
 import { Station, IStation, FuelTypeEnum } from "./../../src/models/Station";
 import { aStation, aPrice } from "../utils/fixtures";
 
-import chai from "chai";
 import { connectMongoTest, closeMongoTest } from "../utils/mongo";
 import { range } from "lodash";
 import moment = require("moment");
 
-const expect = chai.expect;
 
 describe("Station", () => {
   beforeAll(connectMongoTest);
@@ -22,7 +20,7 @@ describe("Station", () => {
     return station.save().then(() => {
       return Station.findOne({ id: station.id }).exec()
         .then((savedStation) => {
-          expect(savedStation.id).to.be.eq(station.id);
+          expect(savedStation.id).toEqual(station.id);
         });
     });
   });
@@ -34,7 +32,7 @@ describe("Station", () => {
       .then(() => Station.bulkUpsertById(stations))
       .then(() => Station.find({}).exec())
       .then((savedStations) => {
-        expect(savedStations.length).to.be.eq(4);
+        expect(savedStations.length).toEqual(4);
       });
   });
 
@@ -43,7 +41,7 @@ describe("Station", () => {
       .then(() => aStation().save())
       .then(() => fail("it should fail!"))
       .catch((err) => {
-        expect(err.message).to.contain("duplicate key");
+        expect(err.message).toContain("duplicate key");
       });
   });
 
@@ -51,16 +49,16 @@ describe("Station", () => {
     return new Station({ prices: [{}] }).validate()
       .then(() => fail("model is not valid!"))
       .catch((err) => {
-        expect(err.errors.id).to.be.exist;
-        expect(err.errors.name).to.be.exist;
-        expect(err.errors.address).to.be.exist;
-        expect(err.errors["location.type"]).to.be.exist;
-        expect(err.errors["prices.0.fuelType"]).to.be.exist;
-        expect(err.errors["prices.0.price"]).to.be.exist;
-        expect(err.errors["prices.0.isSelf"]).to.be.exist;
-        expect(err.errors["prices.0.updatedAt"]).to.be.exist;
-        expect(err.errors.city).to.be.exist;
-        expect(err.errors.province).to.be.exist;
+        expect(err.errors.id).toBeDefined();
+        expect(err.errors.name).toBeDefined();
+        expect(err.errors.address).toBeDefined();
+        expect(err.errors["location.type"]).toBeDefined();
+        expect(err.errors["prices.0.fuelType"]).toBeDefined();
+        expect(err.errors["prices.0.price"]).toBeDefined();
+        expect(err.errors["prices.0.isSelf"]).toBeDefined();
+        expect(err.errors["prices.0.updatedAt"]).toBeDefined();
+        expect(err.errors.city).toBeDefined();
+        expect(err.errors.province).toBeDefined();
       });
   });
 
@@ -71,8 +69,8 @@ describe("Station", () => {
       return Station.bulkUpsertById(stations)
         .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
         .then((stations: IStation[]) => {
-          expect(stations.length).to.be.eq(2);
-          expect(stations[0].id).to.be.eq(1);
+          expect(stations.length).toEqual(2);
+          expect(stations[0].id).toEqual(1);
         });
     });
 
@@ -85,7 +83,7 @@ describe("Station", () => {
       stations[4].prices[0].fuelType = "Hi-Q Benzina";
       return Station.bulkUpsertById(stations)
         .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-        .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).to.be.eq(FuelTypeEnum.GASOLINE)));
+        .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).toEqual(FuelTypeEnum.GASOLINE)));
     });
 
     it("should filter out stations that have too old prices", () => {
@@ -93,7 +91,7 @@ describe("Station", () => {
       station.prices[0].updatedAt = moment().add(-7, "months").toDate();
       return Station.bulkUpsertById([station])
         .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-        .then((ss) => expect(ss.length).to.be.eq(0));
+        .then((ss) => expect(ss.length).toEqual(0));
     });
 
     it("should not filter out stations that have at least one price updated", () => {
@@ -102,7 +100,7 @@ describe("Station", () => {
       station.prices[0].updatedAt = moment().add(-7, "months").toDate();
       return Station.bulkUpsertById([station])
         .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-        .then((ss) => expect(ss.length).to.be.eq(1));
+        .then((ss) => expect(ss.length).toEqual(1));
     });
   });
 
@@ -117,7 +115,7 @@ describe("Station", () => {
     stations[6].prices[0].fuelType = "Super";
     return Station.bulkUpsertById(stations)
       .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-      .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).to.be.eq(FuelTypeEnum.DIESEL)));
+      .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).toEqual(FuelTypeEnum.DIESEL)));
   });
 
   it("should populate fuelTypeEnum for other", () => {
@@ -131,7 +129,7 @@ describe("Station", () => {
     stations[4].prices[0].fuelType = undefined;
     return Station.bulkUpsertById(stations)
       .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-      .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).to.be.eq(FuelTypeEnum.OTHER)));
+      .then((ss) => ss.forEach(s => expect(s.prices[0].fuelTypeEnum).toEqual(FuelTypeEnum.OTHER)));
   });
 
   it("should add fuelTypeEnum to JSON", () => {
@@ -139,7 +137,7 @@ describe("Station", () => {
     station.prices[0].fuelType = "Diesel";
     return Station.bulkUpsertById([station])
       .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-      .then((ss) => expect(ss[0].toJSON().prices[0].fuelTypeEnum).to.be.eq("DIESEL"));
+      .then((ss) => expect(ss[0].toJSON().prices[0].fuelTypeEnum).toEqual("DIESEL"));
   });
 
 
