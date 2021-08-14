@@ -1,5 +1,4 @@
-import { expect } from "chai";
-import { createSandbox, assert, SinonStub } from "sinon";
+import { createSandbox, SinonStub } from "sinon";
 import { StationService } from "../../src/services/stationService";
 import { StationsController } from "../../src/controllers/stationController";
 import { aStation } from "../utils/fixtures";
@@ -28,8 +27,8 @@ describe("StationController", () => {
       json: sandbox.stub(),
     };
     return controller.updateStationCollection(req, res).then(() => {
-      expect((res.json as sinon.SinonStub).calledOnce).to.be.true;
-      expect(updateStationStub.calledOnce).to.be.true;
+      expect((res.json as sinon.SinonStub).calledOnce).toBeTruthy();
+      expect(updateStationStub.calledOnce).toBeTruthy();
     });
   });
 
@@ -47,8 +46,8 @@ describe("StationController", () => {
     return controller.findNearestByCoordinates(req, res)
       .then(() => {
         const jsonStub = (res.json as SinonStub);
-        expect(jsonStub.calledOnce).to.be.true;
-        expect(jsonStub.args[0][0].items[0].id).to.be.eq(aStation().id);
+        expect(jsonStub.calledOnce).toBeTruthy();
+        expect(jsonStub.args[0][0].items[0].id).toEqual(aStation().id);
       });
   });
 
@@ -68,8 +67,8 @@ describe("StationController", () => {
     return controller.findOnTheRoute(req, res)
       .then(() => {
         const jsonStub = (res.json as SinonStub);
-        expect(jsonStub.calledOnce).to.be.true;
-        expect(jsonStub.args[0][0].items[0].id).to.be.eq(aStation().id);
+        expect(jsonStub.calledOnce).toBeTruthy();
+        expect(jsonStub.args[0][0].items[0].id).toEqual(aStation().id);
       });
   });
 });

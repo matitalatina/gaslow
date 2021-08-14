@@ -36,6 +36,7 @@ export class StationService {
   }
 
   static findNearestByCoordinates(lat: number, lng: number): Promise<IStationDocument[]> {
+    console.log(lat, lng)
     return Station.findNearestByCoordinates(lat, lng);
   }
 

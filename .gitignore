@@ -38,6 +38,7 @@ Thumbs.db
 dist/**/*
 
 .cache/
+.parcel-cache
 
 lambda-invoke-response.json
 

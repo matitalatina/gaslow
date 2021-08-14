@@ -3,7 +3,6 @@ import compression from "compression";  // compresses requests
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import bluebird from "bluebird";
 import { MONGODB_URI } from "./util/secrets";
 
 // Load environment variables from .env file, where API keys and passwords are configured
@@ -13,13 +12,18 @@ dotenv.config({ path: ".env.example" });
 import "./controllers/stationController";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { myContainer } from "./di/inversify.config";
+import { NextFunction, Request, Response } from "express";
 
 // Create Express server
 const server = new InversifyExpressServer(myContainer);
 
+const jsonErrorHandler = async (err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.log('asdsadas')
+  res.status(500).json({ error: err });
+}
+
 // Connect to MongoDB
 const mongoUrl = MONGODB_URI;
-(<any>mongoose).Promise = bluebird;
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, }).then(
   () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ },
 ).catch(err => {
@@ -35,4 +39,5 @@ server.setConfig((app) => {
 
 // Express configuration
 const app = server.build();
+app.use(jsonErrorHandler);
 export default app;
