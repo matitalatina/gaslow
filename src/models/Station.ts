@@ -109,11 +109,11 @@ stationSchema.statics.bulkUpsertById = function (stations: IStationDocument[]) {
         upsert: true,
       }
     }));
-  return (this as IStationModel).collection.bulkWrite(stationUpdates);
+  return this.collection.bulkWrite(stationUpdates);
 };
 
 stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: number, limit: number = 100): Promise<IStationDocument[]> {
-  return (this as IStationModel)
+  return this
     .find({
       "location": { $near: { $geometry: { type: "Point", coordinates: [lng, lat] } } },
       ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
@@ -123,7 +123,7 @@ stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: num
 };
 
 stationSchema.statics.findWithinPolygon = function (geom: Polygon, limit: number = 300): Promise<IStationDocument[]> {
-  return (this as IStationModel)
+  return this
     .find({
       "location": { $geoWithin: { $geometry: geom } },
       ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),

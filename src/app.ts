@@ -18,7 +18,6 @@ import { NextFunction, Request, Response } from "express";
 const server = new InversifyExpressServer(myContainer);
 
 const jsonErrorHandler = async (err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.log('asdsadas')
   res.status(500).json({ error: err });
 }
 

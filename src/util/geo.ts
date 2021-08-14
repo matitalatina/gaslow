@@ -1,7 +1,7 @@
 import buffer from "@turf/buffer";
-import { Feature, lineString, Polygon } from "@turf/helpers";
+import { lineString, Polygon } from "@turf/helpers";
 import { injectable } from "inversify";
-import polyline = require("@mapbox/polyline");
+import polyline from "@mapbox/polyline";
 
 @injectable()
 export default class GeoUtil {

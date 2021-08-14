@@ -4,7 +4,7 @@ import { aStation, aPrice } from "../utils/fixtures";
 
 import { connectMongoTest, closeMongoTest } from "../utils/mongo";
 import { range } from "lodash";
-import moment = require("moment");
+import moment from "moment";
 
 
 describe("Station", () => {
