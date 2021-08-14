@@ -1,32 +1,34 @@
-import { GeoType, IStationDocument, IStation } from "../models/Station";
-import { CsvStation } from "./models/csvStation";
-import { CsvPrice } from "./models/csvPrice";
-import { keyBy } from "lodash";
+import { keyBy } from 'lodash';
+import {
+  GeoType, IStation, Price,
+} from '../models/Station';
+import { CsvPrice } from './models/csvPrice';
+import { CsvStation } from './models/csvStation';
 
 export class StationConverter {
   static merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): IStation[] {
-    const stations: IStation[] = csvStations.map(s => {
-      const station = Object.assign({
-        prices: [],
+    const stations: IStation[] = csvStations.map((s) => {
+      const station = {
+        prices: [] as Price[],
         location: {
           type: GeoType.Point,
           coordinates: [s.longitude, s.latitude],
         },
-      }, s);
+        ...s,
+      };
       delete station.latitude;
       delete station.longitude;
       return station;
     });
-    const stationsById = keyBy(stations, "id");
-    csvPrices.forEach(p => {
+    const stationsById = keyBy(stations, 'id');
+    csvPrices.forEach((p) => {
       const s = stationsById[p.idStation];
       if (s) {
         s.prices.push(p);
+      } else {
+        console.log(`${p.idStation} not found in station`);
       }
-      else {
-        console.log(p.idStation + " not found in station");
-      }
-      delete p["idStation"];
+      delete p.idStation;
     });
     return stations;
   }

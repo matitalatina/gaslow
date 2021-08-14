@@ -25,7 +25,6 @@
     "test": "jest --forceExit --coverage --verbose --detectOpenHandles",
     "watch-test": "npm run test -- --watchAll",
     "watch-ts": "parcel watch src/server.ts",
-    "tslint": "tslint -c tslint.json -p tsconfig.json",
     "debug": "npm run build && npm run watch-debug",
     "serve-debug": "nodemon --inspect dist/server.js",
     "check-ts": "tsc --noEmit",
@@ -85,8 +84,14 @@
     "@types/mongodb": "^3.5.26",
     "@types/mongoose": "^5.11.97",
     "@types/sinon": "^7.0.6",
+    "@typescript-eslint/eslint-plugin": "^4.29.1",
+    "@typescript-eslint/parser": "^4.29.1",
     "axios-mock-adapter": "^1.20.0",
     "concurrently": "^3.6.1",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.24.0",
+    "eslint-plugin-jest": "^24.4.0",
     "jest": "^27.0.6",
     "nodemon": "^1.18.10",
     "parcel": "^2.0.0-rc.0",
@@ -94,7 +99,6 @@
     "ts-jest": "^27.0.4",
     "ts-mockito": "^2.6.1",
     "ts-node": "^10.2.0",
-    "tslint": "^5.12.1",
     "typescript": "^4.3.5"
   }
 }

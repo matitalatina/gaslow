@@ -1,11 +1,11 @@
-import mongoose, { Model } from "mongoose";
-import { BulkWriteOpResultObject } from "mongodb";
-import { isNumber } from "lodash";
-import { Polygon } from "@turf/helpers";
-import moment from "moment";
+import mongoose, { Model } from 'mongoose';
+import { BulkWriteOpResultObject } from 'mongodb';
+import { isNumber } from 'lodash';
+import { Polygon } from '@turf/helpers';
+import moment from 'moment';
 
 export enum GeoType {
-  Point = "Point",
+  Point = 'Point',
 }
 export type GeoJSON = {
   type: GeoType,
@@ -13,9 +13,9 @@ export type GeoJSON = {
 };
 
 export enum FuelTypeEnum {
-  GASOLINE = "GASOLINE",
-  DIESEL = "DIESEL",
-  OTHER = "OTHER",
+  GASOLINE = 'GASOLINE',
+  DIESEL = 'DIESEL',
+  OTHER = 'OTHER',
 }
 
 export type Price = {
@@ -53,26 +53,28 @@ const priceSchema = new mongoose.Schema({
   updatedAt: { type: Date, required: true },
 }, { toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
-priceSchema.virtual("fuelTypeEnum").get(function () {
+priceSchema.virtual('fuelTypeEnum').get(function () {
   if (!this.fuelType) {
     return FuelTypeEnum.OTHER;
   }
   const fuelTypeLower: String = this.fuelType.toLowerCase();
-  if (fuelTypeLower.includes("enzin")) {
+  if (fuelTypeLower.includes('enzin')) {
     return FuelTypeEnum.GASOLINE;
   }
-  else if (["asolio", "iesel", "uper"].some((s) => fuelTypeLower.includes(s))) {
+  if (['asolio', 'iesel', 'uper'].some((s) => fuelTypeLower.includes(s))) {
     return FuelTypeEnum.DIESEL;
   }
   return FuelTypeEnum.OTHER;
 });
 
 function filterByPriceUpdatedAt(updatedAt: Date) {
-  return { "prices.updatedAt": { "$gte": updatedAt } };
+  return { 'prices.updatedAt': { $gte: updatedAt } };
 }
 
 const stationSchema = new mongoose.Schema({
-  id: { type: Number, required: true, index: true, unique: true },
+  id: {
+    type: Number, required: true, index: true, unique: true,
+  },
   manager: String,
   brand: String,
   type: String,
@@ -83,7 +85,7 @@ const stationSchema = new mongoose.Schema({
   location: {
     type: {
       type: String,
-      enum: ["Point"],
+      enum: ['Point'],
       required: true,
     },
     coordinates: [Number],
@@ -91,23 +93,23 @@ const stationSchema = new mongoose.Schema({
   prices: [priceSchema],
 }, { timestamps: true });
 
-stationSchema.index({ "location": "2dsphere" });
+stationSchema.index({ location: '2dsphere' });
 
 stationSchema.statics.bulkUpsertById = function (stations: IStationDocument[]) {
   const stationUpdates = stations
-    .filter(s => {
+    .filter((s) => {
       const hasValidCoords = isNumber(s.location.coordinates[0]) && isNumber(s.location.coordinates[1]);
       if (!hasValidCoords) {
-        console.log("Invalid coords: " + JSON.stringify(s));
+        console.log(`Invalid coords: ${JSON.stringify(s)}`);
       }
       return hasValidCoords;
     })
-    .map(station => ({
+    .map((station) => ({
       updateOne: {
         filter: { id: station.id },
         update: { $set: station },
         upsert: true,
-      }
+      },
     }));
   return this.collection.bulkWrite(stationUpdates);
 };
@@ -115,8 +117,8 @@ stationSchema.statics.bulkUpsertById = function (stations: IStationDocument[]) {
 stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: number, limit: number = 100): Promise<IStationDocument[]> {
   return this
     .find({
-      "location": { $near: { $geometry: { type: "Point", coordinates: [lng, lat] } } },
-      ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
+      location: { $near: { $geometry: { type: 'Point', coordinates: [lng, lat] } } },
+      ...filterByPriceUpdatedAt(moment().add(-1, 'months').toDate()),
     })
     .limit(limit)
     .exec();
@@ -125,16 +127,16 @@ stationSchema.statics.findNearestByCoordinates = function (lat: number, lng: num
 stationSchema.statics.findWithinPolygon = function (geom: Polygon, limit: number = 300): Promise<IStationDocument[]> {
   return this
     .find({
-      "location": { $geoWithin: { $geometry: geom } },
-      ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
+      location: { $geoWithin: { $geometry: geom } },
+      ...filterByPriceUpdatedAt(moment().add(-1, 'months').toDate()),
     })
     .limit(limit)
     .exec();
 };
 export const Station: IStationModel = (() => {
   try {
-    return mongoose.model<IStationDocument, IStationModel>("Station");
+    return mongoose.model<IStationDocument, IStationModel>('Station');
   } catch (e) {
-    return mongoose.model<IStationDocument, IStationModel>("Station", stationSchema);
+    return mongoose.model<IStationDocument, IStationModel>('Station', stationSchema);
   }
 })();
