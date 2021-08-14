@@ -1,9 +1,8 @@
-import { IStationDocument } from "./Station";
 import mongoose, { Model } from "mongoose";
 import { BulkWriteOpResultObject } from "mongodb";
 import { isNumber } from "lodash";
 import { Polygon } from "@turf/helpers";
-import moment = require("moment");
+import moment from "moment";
 
 export enum GeoType {
   Point = "Point",
@@ -99,7 +98,7 @@ stationSchema.statics.bulkUpsertById = function (stations: IStationDocument[]) {
     .filter(s => {
       const hasValidCoords = isNumber(s.location.coordinates[0]) && isNumber(s.location.coordinates[1]);
       if (!hasValidCoords) {
-        console.log("Invalid coords: " + s);
+        console.log("Invalid coords: " + JSON.stringify(s));
       }
       return hasValidCoords;
     })
