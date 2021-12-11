@@ -1,5 +1,5 @@
-import * as awsServerlessExpress from 'aws-serverless-express';
-import app from './app';
+import * as awsServerlessExpress from 'aws-serverless-express'
+import app from './app'
 
 // NOTE: If you get ERR_CONTENT_DECODING_FAILED in your browser, this is likely
 // due to a compressed response (e.g. gzip) which has not been handled correctly
@@ -22,9 +22,9 @@ const binaryMimeTypes = [
   'text/javascript',
   'text/plain',
   'text/text',
-  'text/xml',
-];
+  'text/xml'
+]
 
-const server = awsServerlessExpress.createServer(app, undefined, binaryMimeTypes);
+const server = awsServerlessExpress.createServer(app, undefined, binaryMimeTypes)
 
-exports.handler = (event: any, context: any) => awsServerlessExpress.proxy(server, event, context);
+exports.handler = (event: any, context: any) => awsServerlessExpress.proxy(server, event, context)

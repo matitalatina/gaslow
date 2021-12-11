@@ -1,19 +1,19 @@
-import { injectable, inject } from 'inversify';
-import { GoogleMapsClient } from '../clients/GoogleMapsClient';
-import { IStationDocument, Station } from '../models/Station';
-import { StationConverter } from '../parsers/stationConverter';
-import { PriceParser } from '../parsers/priceParser';
-import { StringDownloader } from '../fetchers/stringDownloader';
-import StationParser from '../parsers/stationParser';
-import { TYPES } from '../di/types';
-import ILatLng from '../models/ILatLng';
-import GeoUtil from '../util/geo';
+import { injectable, inject } from 'inversify'
+import { GoogleMapsClient } from '../clients/GoogleMapsClient'
+import { IStationDocument, Station } from '../models/Station'
+import { StationConverter } from '../parsers/stationConverter'
+import { PriceParser } from '../parsers/priceParser'
+import { StringDownloader } from '../fetchers/stringDownloader'
+import StationParser from '../parsers/stationParser'
+import { TYPES } from '../di/types'
+import ILatLng from '../models/ILatLng'
+import GeoUtil from '../util/geo'
 
 @injectable()
 export class StationService {
-  constructor(
+  constructor (
     @inject(TYPES.GoogleMapsClient) private googleMapsClient: GoogleMapsClient,
-    @inject(TYPES.GeoUtil) private geoUtil: GeoUtil,
+    @inject(TYPES.GeoUtil) private geoUtil: GeoUtil
   ) {
 
   }
@@ -22,28 +22,28 @@ export class StationService {
 
   static stationsSource: string = 'https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv';
 
-  static updateStationCollection(): Promise<void> {
+  static updateStationCollection (): Promise<void> {
     const csvStationsPromise = StringDownloader
       .download(this.stationsSource)
-      .then(StationParser.parse);
+      .then(StationParser.parse)
     const csvPricesPromise = StringDownloader
       .download(this.pricesSource)
-      .then(PriceParser.parse);
+      .then(PriceParser.parse)
 
     return Promise
       .all([csvStationsPromise, csvPricesPromise])
       .then(([csvStations, csvPrices]) => {
-        Station.bulkUpsertById(StationConverter.merge(csvStations, csvPrices));
-      });
+        Station.bulkUpsertById(StationConverter.merge(csvStations, csvPrices))
+      })
   }
 
-  static findNearestByCoordinates(lat: number, lng: number): Promise<IStationDocument[]> {
-    console.log(lat, lng);
-    return Station.findNearestByCoordinates(lat, lng);
+  static findNearestByCoordinates (lat: number, lng: number): Promise<IStationDocument[]> {
+    console.log(lat, lng)
+    return Station.findNearestByCoordinates(lat, lng)
   }
 
-  async findOnTheRoute(from: ILatLng, to: ILatLng): Promise<IStationDocument[]> {
-    const polyline = await this.googleMapsClient.getPolylineByRoute(from, to);
-    return Station.findWithinPolygon(this.geoUtil.fromPolylineToPolygon(polyline));
+  async findOnTheRoute (from: ILatLng, to: ILatLng): Promise<IStationDocument[]> {
+    const polyline = await this.googleMapsClient.getPolylineByRoute(from, to)
+    return Station.findWithinPolygon(this.geoUtil.fromPolylineToPolygon(polyline))
   }
 }
