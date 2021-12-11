@@ -1,8 +1,8 @@
-import mongoose, { Model } from 'mongoose'
-import { isNumber } from 'lodash'
 import { Polygon } from '@turf/helpers'
+import { isNumber } from 'lodash'
 import moment from 'moment'
 import { BulkWriteResult } from 'mongodb'
+import { Document, model, Model, Schema } from 'mongoose'
 
 export enum GeoType {
   Point = 'Point',
@@ -38,15 +38,17 @@ export type IStation = {
   location: GeoJSON,
   prices: Price[],
 };
-export type IStationDocument = mongoose.Document & IStation;
 
-export type IStationModel = Model<IStationDocument> & {
+export type IStationDocument = Document & IStation;
+
+export type IStationModel = Model<IStation> & {
   bulkUpsertById: (stations: IStation[]) => Promise<BulkWriteResult>,
-  findNearestByCoordinates: (lat: number, lng: number, limit?: number) => Promise<IStationDocument[]>,
-  findWithinPolygon: (geom: Polygon, limit?: number) => Promise<IStationDocument[]>,
+  findNearestByCoordinates: (lat: number, lng: number, limit?: number) => Promise<IStation[]>,
+  findWithinPolygon: (geom: Polygon, limit?: number) => Promise<IStation[]>,
+  findByIds: (ids: number[]) => Promise<IStation[]>,
 };
 
-const priceSchema = new mongoose.Schema({
+const priceSchema = new Schema({
   fuelType: { type: String, required: true },
   price: { type: Number, required: true },
   isSelf: { type: Boolean, required: true },
@@ -71,7 +73,7 @@ function filterByPriceUpdatedAt (updatedAt: Date) {
   return { 'prices.updatedAt': { $gte: updatedAt } }
 }
 
-const stationSchema = new mongoose.Schema({
+const stationSchema = new Schema({
   id: {
     type: Number, required: true, index: true, unique: true
   },
@@ -95,7 +97,7 @@ const stationSchema = new mongoose.Schema({
 
 stationSchema.index({ location: '2dsphere' })
 
-stationSchema.statics.bulkUpsertById = function bulkUpsertById (stations: IStationDocument[]) {
+stationSchema.statics.bulkUpsertById = function bulkUpsertById (stations: IStation[]) {
   const stationUpdates = stations
     .filter((s) => {
       const hasValidCoords = isNumber(s.location.coordinates[0]) && isNumber(s.location.coordinates[1])
@@ -114,7 +116,7 @@ stationSchema.statics.bulkUpsertById = function bulkUpsertById (stations: IStati
   return this.collection.bulkWrite(stationUpdates)
 }
 
-stationSchema.statics.findNearestByCoordinates = function findNearestByCoordinates (lat: number, lng: number, limit: number = 100): Promise<IStationDocument[]> {
+stationSchema.statics.findNearestByCoordinates = function findNearestByCoordinates (lat: number, lng: number, limit: number = 100): Promise<IStation[]> {
   return this
     .find({
       location: { $near: { $geometry: { type: 'Point', coordinates: [lng, lat] } } },
@@ -124,7 +126,7 @@ stationSchema.statics.findNearestByCoordinates = function findNearestByCoordinat
     .exec()
 }
 
-stationSchema.statics.findWithinPolygon = function findWithinPolygon (geom: Polygon, limit: number = 300): Promise<IStationDocument[]> {
+stationSchema.statics.findWithinPolygon = function findWithinPolygon (geom: Polygon, limit: number = 300): Promise<IStation[]> {
   return this
     .find({
       location: { $geoWithin: { $geometry: geom } },
@@ -133,10 +135,13 @@ stationSchema.statics.findWithinPolygon = function findWithinPolygon (geom: Poly
     .limit(limit)
     .exec()
 }
-export const Station: IStationModel = (() => {
-  try {
-    return mongoose.model<IStationDocument, IStationModel>('Station')
-  } catch (e) {
-    return mongoose.model<IStationDocument, IStationModel>('Station', stationSchema)
-  }
-})()
+
+stationSchema.statics.findByIds = function findByIds (ids: number[]): Promise<IStation[]> {
+  return this
+    .find({
+      id: { $in: ids },
+      ...filterByPriceUpdatedAt(moment().add(-1, 'months').toDate())
+    })
+    .exec()
+}
+export const Station: IStationModel = model<IStationDocument, IStationModel>('Station', stationSchema)

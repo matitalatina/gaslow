@@ -1,0 +1,11 @@
+###
+# Update stations
+POST http://localhost:3000/stations/update
+
+###
+# Find by position
+GET http://localhost:3000/stations/find/location?lat=45.695&lng=9.67
+
+###
+# Find by ids
+GET http://localhost:3000/stations/find?ids=11482,6373

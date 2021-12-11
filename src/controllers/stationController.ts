@@ -16,14 +16,22 @@ export class StationsController implements interfaces.Controller {
 
   @httpPost('/update')
   updateStationCollection (@request() req: Request, @response() res: Response): Promise<void> {
-    return StationService.updateStationCollection().then(() => {
+    return this.stationService.updateStationCollection().then(() => {
       res.json({ message: 'Finished!' })
     })
   }
 
   @httpGet('/find/location')
   findNearestByCoordinates (@request() req: Request, @response() res: Response): Promise<void> {
-    return StationService.findNearestByCoordinates(+req.query.lat, +req.query.lng).then((stations) => {
+    return this.stationService.findNearestByCoordinates(+req.query.lat, +req.query.lng).then((stations) => {
+      res.json({ items: stations })
+    })
+  }
+
+  @httpGet('/find')
+  findByIds (@request() req: Request, @response() res: Response): Promise<void> {
+    const ids = (req.query.ids as string).split(',').map(i => +i)
+    return this.stationService.findByIds(ids).then((stations) => {
       res.json({ items: stations })
     })
   }

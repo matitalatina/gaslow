@@ -23,7 +23,7 @@ const jsonErrorHandler = async (err: Error, req: Request, res: Response, next: N
 
 // Connect to MongoDB
 const mongoUrl = MONGODB_URI
-mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }).then(
+mongoose.connect(mongoUrl).then(
   () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ }
 ).catch((err) => {
   console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`)

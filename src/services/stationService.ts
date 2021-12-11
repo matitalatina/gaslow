@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import { GoogleMapsClient } from '../clients/GoogleMapsClient'
-import { IStationDocument, Station } from '../models/Station'
+import { IStation, Station } from '../models/Station'
 import { StationConverter } from '../parsers/stationConverter'
 import { PriceParser } from '../parsers/priceParser'
 import { StringDownloader } from '../fetchers/stringDownloader'
@@ -22,12 +22,12 @@ export class StationService {
 
   static stationsSource: string = 'https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv';
 
-  static updateStationCollection (): Promise<void> {
+  updateStationCollection (): Promise<void> {
     const csvStationsPromise = StringDownloader
-      .download(this.stationsSource)
+      .download(StationService.stationsSource)
       .then(StationParser.parse)
     const csvPricesPromise = StringDownloader
-      .download(this.pricesSource)
+      .download(StationService.pricesSource)
       .then(PriceParser.parse)
 
     return Promise
@@ -37,13 +37,17 @@ export class StationService {
       })
   }
 
-  static findNearestByCoordinates (lat: number, lng: number): Promise<IStationDocument[]> {
+  findNearestByCoordinates (lat: number, lng: number): Promise<IStation[]> {
     console.log(lat, lng)
     return Station.findNearestByCoordinates(lat, lng)
   }
 
-  async findOnTheRoute (from: ILatLng, to: ILatLng): Promise<IStationDocument[]> {
+  async findOnTheRoute (from: ILatLng, to: ILatLng): Promise<IStation[]> {
     const polyline = await this.googleMapsClient.getPolylineByRoute(from, to)
     return Station.findWithinPolygon(this.geoUtil.fromPolylineToPolygon(polyline))
+  }
+
+  findByIds (ids: number[]) {
+    return Station.findByIds(ids)
   }
 }
