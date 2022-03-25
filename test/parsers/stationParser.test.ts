@@ -13,7 +13,7 @@ describe('StationParser', () => {
   it('should parse the csv skipping the first two lines', (done) => {
     parsedStations
       .then((csvLines) => {
-        expect(csvLines.length).toEqual(3)
+        expect(csvLines.length).toEqual(4)
         done()
       })
   })
@@ -32,6 +32,23 @@ describe('StationParser', () => {
         expect(firstStation.province).toEqual('FE')
         expect(firstStation.latitude).toEqual(44.88011856623546)
         expect(firstStation.longitude).toEqual(11.570832944774565)
+        done()
+      })
+  })
+  it('should parse correctly the station with html entities', (done) => {
+    parsedStations
+      .then((stations) => {
+        const firstStation = stations[3]
+        expect(firstStation.id).toEqual(23777)
+        expect(firstStation.manager).toEqual('ALFONSO DI BENEDETTO CARBURANTI LUBRIFICANTI SRL')
+        expect(firstStation.brand).toEqual('Sicilpetroli')
+        expect(firstStation.type).toEqual('Stradale')
+        expect(firstStation.name).toEqual('A. Di Benedetto srl V.le C. Alberto Canicatti')
+        expect(firstStation.address).toEqual('VIA VIALE CARLO ALBERTO S.N. 92024, CANICATTI\' (AG) SNC 92024')
+        expect(firstStation.city).toEqual('CANICATTI\'')
+        expect(firstStation.province).toEqual('AG')
+        expect(firstStation.latitude).toEqual(37.36246631312339)
+        expect(firstStation.longitude).toEqual(13.8555327218387)
         done()
       })
   })
