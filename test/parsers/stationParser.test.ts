@@ -10,7 +10,7 @@ describe('StationParser', () => {
       .then((csvString) => StationParser.parse(csvString))
   })
 
-  it('should parse the csv skipping the first two lines', (done) => {
+  it('should parse the csv skipping the first two lines and possible errors', (done) => {
     parsedStations
       .then((csvLines) => {
         expect(csvLines.length).toEqual(4)
