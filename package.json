@@ -69,7 +69,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "mongodb": "^4.2.1",
-    "mongoose": "^6.1.1",
+    "mongoose": "^6.4.6",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
