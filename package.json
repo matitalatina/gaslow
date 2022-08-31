@@ -47,7 +47,7 @@
     }
   },
   "engines": {
-    "node": "12"
+    "node": "14"
   },
   "dependencies": {
     "@mapbox/polyline": "^1.0.0",
