@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:3000
+@baseUrl = https://gaslow-api.mattianatali.com
 # @baseUrl = https://gaslow.herokuapp.com
 
 ###
