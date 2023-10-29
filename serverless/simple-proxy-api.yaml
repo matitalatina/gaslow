@@ -4,12 +4,12 @@ info:
   title: GaslowServerlessApi
 basePath: /prod
 schemes:
-- https
+  - https
 paths:
   /:
     x-amazon-apigateway-any-method:
       produces:
-      - application/json
+        - application/json
       responses:
         200:
           description: 200 response
@@ -27,9 +27,9 @@ paths:
         type: aws_proxy
     options:
       consumes:
-      - application/json
+        - application/json
       produces:
-      - application/json
+        - application/json
       responses:
         200:
           description: 200 response
@@ -52,17 +52,17 @@ paths:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         passthroughBehavior: when_no_match
         requestTemplates:
-          application/json: "{\"statusCode\": 200}"
+          application/json: '{"statusCode": 200}'
         type: mock
   /{proxy+}:
     x-amazon-apigateway-any-method:
       produces:
-      - application/json
+        - application/json
       parameters:
-      - name: proxy
-        in: path
-        required: true
-        type: string
+        - name: proxy
+          in: path
+          required: true
+          type: string
       responses: {}
       security:
         - api_key: []
@@ -72,9 +72,9 @@ paths:
         type: aws_proxy
     options:
       consumes:
-      - application/json
+        - application/json
       produces:
-      - application/json
+        - application/json
       responses:
         200:
           description: 200 response
@@ -97,10 +97,10 @@ paths:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         passthroughBehavior: when_no_match
         requestTemplates:
-          application/json: "{\"statusCode\": 200}"
+          application/json: '{"statusCode": 200}'
         type: mock
 x-amazon-apigateway-binary-media-types:
-  - '*/*'
+  - "*/*"
 securityDefinitions:
   api_key:
     type: "apiKey"

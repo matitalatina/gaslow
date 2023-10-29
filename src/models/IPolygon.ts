@@ -1,4 +1,4 @@
 export default interface IPolygon {
-  type: 'Polygon';
+  type: "Polygon";
   coordinates: number[][][];
-};
+}

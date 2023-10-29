@@ -1,147 +1,175 @@
-import { Polygon } from '@turf/helpers'
-import { isNumber } from 'lodash'
-import moment from 'moment'
-import { BulkWriteResult } from 'mongodb'
-import { Document, model, Model, Schema } from 'mongoose'
+import { Polygon } from "@turf/helpers";
+import { isNumber } from "lodash";
+import moment from "moment";
+import { BulkWriteResult } from "mongodb";
+import { Document, model, Model, Schema } from "mongoose";
 
 export enum GeoType {
-  Point = 'Point',
+  Point = "Point",
 }
 export type GeoJSON = {
-  type: GeoType,
-  coordinates: number[],
+  type: GeoType;
+  coordinates: number[];
 };
 
 export enum FuelTypeEnum {
-  GASOLINE = 'GASOLINE',
-  DIESEL = 'DIESEL',
-  OTHER = 'OTHER',
+  GASOLINE = "GASOLINE",
+  DIESEL = "DIESEL",
+  OTHER = "OTHER",
 }
 
 export type Price = {
-  fuelType: String,
-  fuelTypeEnum?: FuelTypeEnum,
-  price: number,
-  isSelf: boolean,
-  updatedAt: Date,
+  fuelType: string;
+  fuelTypeEnum?: FuelTypeEnum;
+  price: number;
+  isSelf: boolean;
+  updatedAt: Date;
 };
 
 export type IStation = {
-  id: number,
-  manager: string,
-  brand: string,
-  type: string,
-  name: string,
-  address: string,
-  city: string,
-  province: string,
-  location: GeoJSON,
-  prices: Price[],
+  id: number;
+  manager: string;
+  brand: string;
+  type: string;
+  name: string;
+  address: string;
+  city: string;
+  province: string;
+  location: GeoJSON;
+  prices: Price[];
 };
 
 export type IStationDocument = Document & IStation;
 
 export type IStationModel = Model<IStation> & {
-  bulkUpsertById: (stations: IStation[]) => Promise<BulkWriteResult>,
-  findNearestByCoordinates: (lat: number, lng: number, limit?: number) => Promise<IStation[]>,
-  findWithinPolygon: (geom: Polygon, limit?: number) => Promise<IStation[]>,
-  findByIds: (ids: number[]) => Promise<IStation[]>,
+  bulkUpsertById: (stations: IStation[]) => Promise<BulkWriteResult>;
+  findNearestByCoordinates: (
+    lat: number,
+    lng: number,
+    limit?: number,
+  ) => Promise<IStation[]>;
+  findWithinPolygon: (geom: Polygon, limit?: number) => Promise<IStation[]>;
+  findByIds: (ids: number[]) => Promise<IStation[]>;
 };
 
-const priceSchema = new Schema({
-  fuelType: { type: String, required: true },
-  price: { type: Number, required: true },
-  isSelf: { type: Boolean, required: true },
-  updatedAt: { type: Date, required: true }
-}, { toJSON: { virtuals: true }, toObject: { virtuals: true } })
+const priceSchema = new Schema(
+  {
+    fuelType: { type: String, required: true },
+    price: { type: Number, required: true },
+    isSelf: { type: Boolean, required: true },
+    updatedAt: { type: Date, required: true },
+  },
+  { toJSON: { virtuals: true }, toObject: { virtuals: true } },
+);
 
-priceSchema.virtual('fuelTypeEnum').get(function () {
+priceSchema.virtual("fuelTypeEnum").get(function () {
   if (!this.fuelType) {
-    return FuelTypeEnum.OTHER
+    return FuelTypeEnum.OTHER;
   }
-  const fuelTypeLower: String = this.fuelType.toLowerCase()
-  if (fuelTypeLower.includes('enzin')) {
-    return FuelTypeEnum.GASOLINE
+  const fuelTypeLower: string = this.fuelType.toLowerCase();
+  if (fuelTypeLower.includes("enzin")) {
+    return FuelTypeEnum.GASOLINE;
   }
-  if (['asolio', 'iesel', 'uper'].some((s) => fuelTypeLower.includes(s))) {
-    return FuelTypeEnum.DIESEL
+  if (["asolio", "iesel", "uper"].some((s) => fuelTypeLower.includes(s))) {
+    return FuelTypeEnum.DIESEL;
   }
-  return FuelTypeEnum.OTHER
-})
+  return FuelTypeEnum.OTHER;
+});
 
-function filterByPriceUpdatedAt (updatedAt: Date) {
-  return { 'prices.updatedAt': { $gte: updatedAt } }
+function filterByPriceUpdatedAt(updatedAt: Date) {
+  return { "prices.updatedAt": { $gte: updatedAt } };
 }
 
-const stationSchema = new Schema({
-  id: {
-    type: Number, required: true, index: true, unique: true
-  },
-  manager: String,
-  brand: String,
-  type: String,
-  name: { type: String, required: true },
-  address: { type: String, required: true },
-  city: { type: String, required: true },
-  province: { type: String, required: true },
-  location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      required: true
+const stationSchema = new Schema(
+  {
+    id: {
+      type: Number,
+      required: true,
+      index: true,
+      unique: true,
     },
-    coordinates: [Number]
+    manager: String,
+    brand: String,
+    type: String,
+    name: { type: String, required: true },
+    address: { type: String, required: true },
+    city: { type: String, required: true },
+    province: { type: String, required: true },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+      },
+      coordinates: [Number],
+    },
+    prices: [priceSchema],
   },
-  prices: [priceSchema]
-}, { timestamps: true })
+  { timestamps: true },
+);
 
-stationSchema.index({ location: '2dsphere' })
+stationSchema.index({ location: "2dsphere" });
 
-stationSchema.statics.bulkUpsertById = function bulkUpsertById (stations: IStation[]) {
+stationSchema.statics.bulkUpsertById = function bulkUpsertById(
+  stations: IStation[],
+) {
   const stationUpdates = stations
     .filter((s) => {
-      const hasValidCoords = isNumber(s.location.coordinates[0]) && isNumber(s.location.coordinates[1])
+      const hasValidCoords =
+        isNumber(s.location.coordinates[0]) &&
+        isNumber(s.location.coordinates[1]);
       if (!hasValidCoords) {
-        console.log(`Invalid coords: ${JSON.stringify(s)}`)
+        console.log(`Invalid coords: ${JSON.stringify(s)}`);
       }
-      return hasValidCoords
+      return hasValidCoords;
     })
     .map((station) => ({
       updateOne: {
         filter: { id: station.id },
         update: { $set: station },
-        upsert: true
-      }
-    }))
-  return this.collection.bulkWrite(stationUpdates)
-}
+        upsert: true,
+      },
+    }));
+  return this.collection.bulkWrite(stationUpdates);
+};
 
-stationSchema.statics.findNearestByCoordinates = function findNearestByCoordinates (lat: number, lng: number, limit: number = 100): Promise<IStation[]> {
-  return this
-    .find({
-      location: { $near: { $geometry: { type: 'Point', coordinates: [lng, lat] } } },
-      ...filterByPriceUpdatedAt(moment().add(-1, 'months').toDate())
+stationSchema.statics.findNearestByCoordinates =
+  function findNearestByCoordinates(
+    lat: number,
+    lng: number,
+    limit: number = 100,
+  ): Promise<IStation[]> {
+    return this.find({
+      location: {
+        $near: { $geometry: { type: "Point", coordinates: [lng, lat] } },
+      },
+      ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
     })
+      .limit(limit)
+      .exec();
+  };
+
+stationSchema.statics.findWithinPolygon = function findWithinPolygon(
+  geom: Polygon,
+  limit: number = 300,
+): Promise<IStation[]> {
+  return this.find({
+    location: { $geoWithin: { $geometry: geom } },
+    ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
+  })
     .limit(limit)
-    .exec()
-}
+    .exec();
+};
 
-stationSchema.statics.findWithinPolygon = function findWithinPolygon (geom: Polygon, limit: number = 300): Promise<IStation[]> {
-  return this
-    .find({
-      location: { $geoWithin: { $geometry: geom } },
-      ...filterByPriceUpdatedAt(moment().add(-1, 'months').toDate())
-    })
-    .limit(limit)
-    .exec()
-}
-
-stationSchema.statics.findByIds = function findByIds (ids: number[]): Promise<IStation[]> {
-  return this
-    .find({
-      id: { $in: ids },
-      ...filterByPriceUpdatedAt(moment().add(-1, 'months').toDate())
-    })
-    .exec()
-}
-export const Station: IStationModel = model<IStationDocument, IStationModel>('Station', stationSchema)
+stationSchema.statics.findByIds = function findByIds(
+  ids: number[],
+): Promise<IStation[]> {
+  return this.find({
+    id: { $in: ids },
+    ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
+  }).exec();
+};
+export const Station: IStationModel = model<IStationDocument, IStationModel>(
+  "Station",
+  stationSchema,
+);

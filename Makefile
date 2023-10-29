@@ -5,7 +5,7 @@ docker-build:
 
 docker-start:
 	docker stop gaslow; docker rm gaslow || true
-	docker run --name gaslow --init -p 3000:3000 -v $(shell pwd)/.env:/usr/src/app/.env:ro gaslow:{VERSION}
+	docker run --name gaslow --init -p 3000:3000 -v $(shell pwd)/.env:/usr/src/app/.env:ro gaslow:${VERSION}
 
 docker-start-remote:
 	make docker-build

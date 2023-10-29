@@ -2,20 +2,24 @@ module.exports = {
   env: {
     es2021: true,
     node: true,
-    'jest/globals': true
   },
-  extends: [
-    'standard'
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
+  overrides: [
+    {
+      env: {
+        node: true,
+      },
+      files: [".eslintrc.{js,cjs}"],
+      parserOptions: {
+        sourceType: "script",
+      },
+    },
   ],
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 12,
-    sourceType: 'module'
+    ecmaVersion: "latest",
+    sourceType: "module",
   },
-  plugins: [
-    '@typescript-eslint',
-    'jest'
-  ],
-  rules: {
-  }
-}
+  plugins: ["@typescript-eslint"],
+  rules: {},
+};

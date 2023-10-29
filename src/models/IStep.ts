@@ -1,4 +1,4 @@
-import ILatLng from './ILatLng'
+import ILatLng from "./ILatLng";
 
 export default interface IStep {
   from: ILatLng;

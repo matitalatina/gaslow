@@ -1,4 +1,4 @@
-FROM node:14-alpine AS dev
+FROM node:18-alpine AS dev
 RUN apk add --no-cache python3 py3-pip make g++
 
 WORKDIR /usr/src/app
@@ -12,7 +12,7 @@ COPY src src
 
 RUN npm run build
 
-FROM node:14-alpine AS production
+FROM node:18-alpine AS production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
