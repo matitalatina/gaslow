@@ -7,9 +7,10 @@ docker-start:
 	docker stop gaslow; docker rm gaslow || true
 	docker run --name gaslow --init -p 3000:3000 -v $(shell pwd)/.env:/usr/src/app/.env:ro gaslow:${VERSION}
 
-docker-start-remote:
-	make docker-build
-	docker save gaslow:${VERSION} | gzip | ssh fun-met-oracle 'docker load'
+docker-load-remote:
+	docker buildx build --platform=linux/amd64 -t gaslow:${VERSION} -o type=docker,dest=- . | gzip | ssh fun-met-oracle 'docker load'
+
+docker-start-remote: docker-load-remote
 	ssh fun-met-oracle 'docker stop gaslow; docker rm gaslow; \
 		docker run --name gaslow --init -d -p 3000:3000 \
 		-v /home/ubuntu/repos/gaslow/.env:/usr/src/app/.env:ro \
