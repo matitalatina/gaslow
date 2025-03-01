@@ -1,5 +1,4 @@
 import { Polygon } from "@turf/helpers";
-import { isNumber } from "lodash";
 import moment from "moment";
 import { BulkWriteResult } from "mongodb";
 import { Document, model, Model, Schema } from "mongoose";
@@ -116,8 +115,8 @@ stationSchema.statics.bulkUpsertById = function bulkUpsertById(
   const stationUpdates = stations
     .filter((s) => {
       const hasValidCoords =
-        isNumber(s.location.coordinates[0]) &&
-        isNumber(s.location.coordinates[1]);
+        isFinite(s.location.coordinates[0]) &&
+        isFinite(s.location.coordinates[1]);
       if (!hasValidCoords) {
         console.log(`Invalid coords: ${JSON.stringify(s)}`);
       }

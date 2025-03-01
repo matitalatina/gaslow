@@ -9,7 +9,7 @@ import { MONGODB_URI } from "./util/secrets";
 import "./controllers/stationController";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { myContainer } from "./di/inversify.config";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 
 // Load environment variables from .env file, where API keys and passwords are configured
 dotenv.config({ path: ".env.example" });
@@ -17,17 +17,14 @@ dotenv.config({ path: ".env.example" });
 // Create Express server
 const server = new InversifyExpressServer(myContainer);
 
-const jsonErrorHandler = async (err: Error, req: Request, res: Response) => {
-  res.status(500).json({ error: err });
-};
-
 // Connect to MongoDB
 const mongoUrl = MONGODB_URI;
-mongoose.set("strictQuery", true);
+// mongoose.set("strictQuery", true); // This is no longer needed in Mongoose 8.x
 mongoose
   .connect(mongoUrl)
   .then(() => {
     /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
+    console.log("MongoDB connected successfully");
   })
   .catch((err) => {
     console.log(
@@ -44,5 +41,13 @@ server.setConfig((app) => {
 
 // Express configuration
 const app = server.build();
-app.use(jsonErrorHandler);
+
+// Register the error handler middleware correctly
+// Error handlers need to be registered last with all 4 parameters
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  console.error("Error:", err);
+  res.status(500).json({ error: err.message || "Internal Server Error" });
+});
+
 export default app;
