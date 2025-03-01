@@ -1,7 +1,8 @@
-import buffer from "@turf/buffer";
-import { lineString, Polygon } from "@turf/helpers";
+import { buffer } from "@turf/buffer";
+import { lineString } from "@turf/helpers";
 import { injectable } from "inversify";
 import polyline from "@mapbox/polyline";
+import { Polygon } from "geojson";
 
 @injectable()
 export default class GeoUtil {
@@ -11,7 +12,12 @@ export default class GeoUtil {
       latLngs.map(([lat, lng]: number[]) => [lng, lat]),
       { name: "line" },
     );
-    const polygon = buffer(line, 1, { units: "kilometers" });
-    return polygon.geometry;
+    const buffered = buffer(line, 1, { units: "kilometers", steps: 8 });
+
+    if (!buffered) {
+      throw new Error("Failed to create buffer from polyline");
+    }
+
+    return buffered.geometry as Polygon;
   }
 }

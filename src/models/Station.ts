@@ -1,4 +1,4 @@
-import { Polygon } from "@turf/helpers";
+import { Polygon } from "geojson";
 import moment from "moment";
 import { BulkWriteResult } from "mongodb";
 import { Document, model, Model, Schema } from "mongoose";
