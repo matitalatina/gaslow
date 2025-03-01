@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { GoogleMapsClient } from "../clients/GoogleMapsClient";
-import { IStation, Station } from "../models/Station";
+import { IStation } from "../models/Station";
 import { StationConverter } from "../parsers/stationConverter";
 import { PriceParser } from "../parsers/priceParser";
 import { StringDownloader } from "../fetchers/stringDownloader";
@@ -8,12 +8,15 @@ import StationParser from "../parsers/stationParser";
 import { TYPES } from "../di/types";
 import ILatLng from "../models/ILatLng";
 import GeoUtil from "../util/geo";
+import type { IStationModelProvider } from "../models/StationModelProvider";
 
 @injectable()
 export class StationService {
   constructor(
     @inject(TYPES.GoogleMapsClient) private googleMapsClient: GoogleMapsClient,
     @inject(TYPES.GeoUtil) private geoUtil: GeoUtil,
+    @inject(TYPES.StationModelProvider)
+    private stationModel: IStationModelProvider,
   ) {}
 
   static pricesSource: string =
@@ -32,24 +35,26 @@ export class StationService {
 
     return Promise.all([csvStationsPromise, csvPricesPromise]).then(
       ([csvStations, csvPrices]) => {
-        Station.bulkUpsertById(StationConverter.merge(csvStations, csvPrices));
+        this.stationModel.bulkUpsertById(
+          StationConverter.merge(csvStations, csvPrices),
+        );
       },
     );
   }
 
   findNearestByCoordinates(lat: number, lng: number): Promise<IStation[]> {
     console.log(lat, lng);
-    return Station.findNearestByCoordinates(lat, lng);
+    return this.stationModel.findNearestByCoordinates(lat, lng);
   }
 
   async findOnTheRoute(from: ILatLng, to: ILatLng): Promise<IStation[]> {
     const polyline = await this.googleMapsClient.getPolylineByRoute(from, to);
-    return Station.findWithinPolygon(
+    return this.stationModel.findWithinPolygon(
       this.geoUtil.fromPolylineToPolygon(polyline),
     );
   }
 
   findByIds(ids: number[]) {
-    return Station.findByIds(ids);
+    return this.stationModel.findByIds(ids);
   }
 }
