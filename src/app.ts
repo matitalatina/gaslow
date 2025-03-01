@@ -1,3 +1,4 @@
+// Import reflect-metadata with a dynamic import to ensure it's loaded correctly
 import "reflect-metadata";
 import compression from "compression"; // compresses requests
 import bodyParser from "body-parser";

@@ -1,5 +1,6 @@
 import * as awsServerlessExpress from "aws-serverless-express";
 import app from "./app";
+import { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 // NOTE: If you get ERR_CONTENT_DECODING_FAILED in your browser, this is likely
 // due to a compressed response (e.g. gzip) which has not been handled correctly
@@ -31,5 +32,5 @@ const server = awsServerlessExpress.createServer(
   binaryMimeTypes,
 );
 
-exports.handler = (event: any, context: any) =>
+exports.handler = (event: APIGatewayProxyEvent, context: Context) =>
   awsServerlessExpress.proxy(server, event, context);

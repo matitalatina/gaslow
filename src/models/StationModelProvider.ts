@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
-import { Polygon } from "@turf/helpers";
 import { BulkWriteResult, DeleteResult } from "mongodb";
 import { IStation, Station } from "./Station";
+import { Polygon } from "geojson";
 
 export interface IStationModelProvider {
   bulkUpsertById(stations: IStation[]): Promise<BulkWriteResult>;
