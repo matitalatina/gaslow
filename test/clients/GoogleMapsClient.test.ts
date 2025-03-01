@@ -1,12 +1,9 @@
-import { createSandbox } from "sinon";
 import MockAdapter from "axios-mock-adapter";
 import axios from "axios";
 import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient";
 import { GOOGLE_API_KEY } from "../../src/util/secrets";
 import { aGoogleMapsApiDirectionResponse } from "../utils/fixtures";
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
-
-const sandbox = createSandbox();
 
 const axiosMock = new MockAdapter(axios);
 
@@ -19,7 +16,6 @@ describe("GoogleMapsClient", () => {
 
   afterEach(() => {
     axiosMock.reset();
-    sandbox.restore();
   });
 
   it("should extract the polygon", async () => {

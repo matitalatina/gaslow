@@ -41,14 +41,14 @@ export type IStation = {
 export type IStationDocument = Document & IStation;
 
 export type IStationModel = Model<IStation> & {
-  bulkUpsertById: (stations: IStation[]) => Promise<BulkWriteResult>;
-  findNearestByCoordinates: (
+  bulkUpsertById(stations: IStation[]): Promise<BulkWriteResult>;
+  findNearestByCoordinates(
     lat: number,
     lng: number,
     limit?: number,
-  ) => Promise<IStation[]>;
-  findWithinPolygon: (geom: Polygon, limit?: number) => Promise<IStation[]>;
-  findByIds: (ids: number[]) => Promise<IStation[]>;
+  ): Promise<IStation[]>;
+  findWithinPolygon(geom: Polygon, limit?: number): Promise<IStation[]>;
+  findByIds(ids: number[]): Promise<IStation[]>;
 };
 
 const priceSchema = new Schema(
@@ -79,7 +79,7 @@ function filterByPriceUpdatedAt(updatedAt: Date) {
   return { "prices.updatedAt": { $gte: updatedAt } };
 }
 
-const stationSchema = new Schema(
+const stationSchema = new Schema<IStation, IStationModel>(
   {
     id: {
       type: Number,
@@ -104,71 +104,67 @@ const stationSchema = new Schema(
     },
     prices: [priceSchema],
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    statics: {
+      bulkUpsertById(stations: IStation[]) {
+        const stationUpdates = stations
+          .filter((s) => {
+            const hasValidCoords =
+              isFinite(s.location.coordinates[0]) &&
+              isFinite(s.location.coordinates[1]);
+            if (!hasValidCoords) {
+              console.log(`Invalid coords: ${JSON.stringify(s)}`);
+            }
+            return hasValidCoords;
+          })
+          .map((station) => ({
+            updateOne: {
+              filter: { id: station.id },
+              update: { $set: station },
+              upsert: true,
+            },
+          }));
+        return this.collection.bulkWrite(stationUpdates);
+      },
+
+      findNearestByCoordinates(
+        lat: number,
+        lng: number,
+        limit: number = 100,
+      ): Promise<IStation[]> {
+        return this.find({
+          location: {
+            $near: { $geometry: { type: "Point", coordinates: [lng, lat] } },
+          },
+          ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
+        })
+          .limit(limit)
+          .exec();
+      },
+
+      findWithinPolygon(
+        geom: Polygon,
+        limit: number = 300,
+      ): Promise<IStation[]> {
+        return this.find({
+          location: { $geoWithin: { $geometry: geom } },
+          ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
+        })
+          .limit(limit)
+          .exec();
+      },
+
+      findByIds(ids: number[]): Promise<IStation[]> {
+        return this.find({
+          id: { $in: ids },
+          ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
+        }).exec();
+      },
+    },
+  },
 );
 
 stationSchema.index({ location: "2dsphere" });
 
-stationSchema.statics.bulkUpsertById = function bulkUpsertById(
-  stations: IStation[],
-) {
-  const stationUpdates = stations
-    .filter((s) => {
-      const hasValidCoords =
-        isFinite(s.location.coordinates[0]) &&
-        isFinite(s.location.coordinates[1]);
-      if (!hasValidCoords) {
-        console.log(`Invalid coords: ${JSON.stringify(s)}`);
-      }
-      return hasValidCoords;
-    })
-    .map((station) => ({
-      updateOne: {
-        filter: { id: station.id },
-        update: { $set: station },
-        upsert: true,
-      },
-    }));
-  return this.collection.bulkWrite(stationUpdates);
-};
-
-stationSchema.statics.findNearestByCoordinates =
-  function findNearestByCoordinates(
-    lat: number,
-    lng: number,
-    limit: number = 100,
-  ): Promise<IStation[]> {
-    return this.find({
-      location: {
-        $near: { $geometry: { type: "Point", coordinates: [lng, lat] } },
-      },
-      ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
-    })
-      .limit(limit)
-      .exec();
-  };
-
-stationSchema.statics.findWithinPolygon = function findWithinPolygon(
-  geom: Polygon,
-  limit: number = 300,
-): Promise<IStation[]> {
-  return this.find({
-    location: { $geoWithin: { $geometry: geom } },
-    ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
-  })
-    .limit(limit)
-    .exec();
-};
-
-stationSchema.statics.findByIds = function findByIds(
-  ids: number[],
-): Promise<IStation[]> {
-  return this.find({
-    id: { $in: ids },
-    ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
-  }).exec();
-};
-export const Station: IStationModel = model<IStationDocument, IStationModel>(
-  "Station",
-  stationSchema,
-);
+export const Station = model<IStation, IStationModel>("Station", stationSchema);
