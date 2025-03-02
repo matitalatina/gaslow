@@ -25,7 +25,7 @@
     "pretty:fix": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
     "watch-node": "nodemon dist/server.js",
-    "watch-ts": "parcel watch src/server.ts",
+    "watch-ts": "parcel watch --no-hmr src/server.ts",
     "watch-test": "npm run test -- --watchAll",
     "test": "jest --forceExit --coverage --detectOpenHandles",
     "debug": "npm run build && npm run watch-debug",
@@ -76,7 +76,7 @@
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@jest/globals": "^29.7.0",
-    "@parcel/transformer-typescript-tsc": "^2.12.0",
+    "@parcel/transformer-typescript-tsc": "^2.13.3",
     "@types/aws-serverless-express": "^3.3.9",
     "@types/body-parser": "^1.19.5",
     "@types/compression": "^1.7.5",

@@ -2,9 +2,6 @@ import { createSandbox } from "sinon";
 import { mock, reset, instance, when, verify, deepEqual } from "ts-mockito";
 import { polygon } from "@turf/helpers";
 import { StationService } from "../../src/services/stationService";
-import { PriceParser } from "../../src/parsers/priceParser";
-import { StringDownloader } from "../../src/fetchers/stringDownloader";
-import StationParser from "../../src/parsers/stationParser";
 import { aStation, aCsvPrice, aCsvStation } from "../utils/fixtures";
 import { StationConverter } from "../../src/parsers/stationConverter";
 import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient";
@@ -13,11 +10,15 @@ import { range } from "lodash";
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import { BulkWriteResult } from "mongodb";
 import { IStationModelProvider } from "../../src/models/StationModelProvider";
+import { PriceDownloader } from "../../src/fetchers/priceDownloader";
+import { StationDownloader } from "../../src/fetchers/stationDownloader";
 
 const sandbox = createSandbox();
 const mockGoogleMapsClient = mock(GoogleMapsClient);
 const mockGeoUtil = mock(GeoUtil);
 const mockStationModelProvider = mock<IStationModelProvider>();
+const mockPriceDownloader = mock(PriceDownloader);
+const mockStationDownloader = mock(StationDownloader);
 let service: StationService;
 
 describe("StationService", () => {
@@ -25,11 +26,15 @@ describe("StationService", () => {
     reset(mockGoogleMapsClient);
     reset(mockGeoUtil);
     reset(mockStationModelProvider);
+    reset(mockPriceDownloader);
+    reset(mockStationDownloader);
 
     service = new StationService(
       instance(mockGoogleMapsClient),
       instance(mockGeoUtil),
       instance(mockStationModelProvider),
+      instance(mockPriceDownloader),
+      instance(mockStationDownloader),
     );
   });
 
@@ -41,34 +46,16 @@ describe("StationService", () => {
     expect(StationService).toBeDefined();
   });
 
-  it("should have correct sources", () => {
-    expect(StationService.pricesSource).toEqual(
-      "https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv",
-    );
-    expect(StationService.stationsSource).toEqual(
-      "https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv",
-    );
-  });
-
   it("should download and update DB with new data", async () => {
-    const download = sandbox.stub(StringDownloader, "download");
-
-    download
-      .withArgs(StationService.pricesSource)
-      .returns(Promise.resolve("prices"));
-    download
-      .withArgs(StationService.stationsSource)
-      .returns(Promise.resolve("stations"));
-
-    const stationParser = sandbox
-      .stub(StationParser, "parse")
-      .returns(Promise.resolve([aCsvStation()]));
-
-    const priceParser = sandbox
-      .stub(PriceParser, "parse")
-      .returns(Promise.resolve([aCsvPrice()]));
-
+    const csvStations = [aCsvStation()];
+    const csvPrices = [aCsvPrice()];
     const mergedStations = [aStation()];
+
+    // Mock the downloader methods
+    when(mockStationDownloader.download()).thenResolve(csvStations);
+    when(mockPriceDownloader.download()).thenResolve(csvPrices);
+
+    // Mock the StationConverter.merge method
     const stationConverter = sandbox
       .stub(StationConverter, "merge")
       .returns(mergedStations);
@@ -89,11 +76,14 @@ describe("StationService", () => {
 
     await service.updateStationCollection();
 
-    expect(download.calledWith(StationService.stationsSource)).toEqual(true);
-    expect(download.calledWith(StationService.pricesSource)).toEqual(true);
-    expect(stationParser.calledOnceWith("stations")).toEqual(true);
-    expect(priceParser.calledOnceWith("prices")).toEqual(true);
-    expect(stationConverter.calledOnceWith([aCsvStation()], [aCsvPrice()]));
+    // Verify that the downloader methods were called
+    verify(mockStationDownloader.download()).once();
+    verify(mockPriceDownloader.download()).once();
+
+    // Verify that the StationConverter.merge method was called with the correct arguments
+    expect(stationConverter.calledOnceWith(csvStations, csvPrices)).toEqual(
+      true,
+    );
 
     // Verify that bulkUpsertById was called with the correct arguments
     verify(

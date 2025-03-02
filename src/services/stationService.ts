@@ -2,13 +2,12 @@ import { injectable, inject } from "inversify";
 import { GoogleMapsClient } from "../clients/GoogleMapsClient";
 import { IStation } from "../models/Station";
 import { StationConverter } from "../parsers/stationConverter";
-import { PriceParser } from "../parsers/priceParser";
-import { StringDownloader } from "../fetchers/stringDownloader";
-import StationParser from "../parsers/stationParser";
 import { TYPES } from "../di/types";
 import ILatLng from "../models/ILatLng";
 import GeoUtil from "../util/geo";
 import type { IStationModelProvider } from "../models/StationModelProvider";
+import { PriceDownloader } from "../fetchers/priceDownloader";
+import { StationDownloader } from "../fetchers/stationDownloader";
 
 @injectable()
 export class StationService {
@@ -17,21 +16,17 @@ export class StationService {
     @inject(TYPES.GeoUtil) private geoUtil: GeoUtil,
     @inject(TYPES.StationModelProvider)
     private stationModel: IStationModelProvider,
+    @inject(TYPES.PriceDownloader) private priceDownloader: PriceDownloader,
+    @inject(TYPES.StationDownloader)
+    private stationDownloader: StationDownloader,
   ) {}
-
-  static pricesSource: string =
-    "https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv";
 
   static stationsSource: string =
     "https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
 
   updateStationCollection(): Promise<void> {
-    const csvStationsPromise = StringDownloader.download(
-      StationService.stationsSource,
-    ).then(StationParser.parse);
-    const csvPricesPromise = StringDownloader.download(
-      StationService.pricesSource,
-    ).then(PriceParser.parse);
+    const csvStationsPromise = this.stationDownloader.download();
+    const csvPricesPromise = this.priceDownloader.download();
 
     return Promise.all([csvStationsPromise, csvPricesPromise]).then(
       ([csvStations, csvPrices]) => {

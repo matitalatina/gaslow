@@ -6,10 +6,11 @@
     "target": "es2020",
     "noImplicitAny": true,
     "sourceMap": true,
-    "types": ["reflect-metadata", "jest", "node"],
+    "types": ["reflect-metadata", "node"],
     "lib": ["es2020"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "isolatedModules": true,
     "outDir": "dist",
     "baseUrl": "./src/",
     "paths": {
