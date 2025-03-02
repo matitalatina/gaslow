@@ -12,3 +12,7 @@ GET {{baseUrl}}/stations/find/location?lat=45.695&lng=9.67
 ###
 # Find by ids
 GET {{baseUrl}}/stations/find?ids=11482,6373
+
+###
+# Find stations on a route
+GET {{baseUrl}}/stations/find/route?from=45.695,9.67&to=45.8,9.85
