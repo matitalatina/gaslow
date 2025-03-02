@@ -1,4 +1,3 @@
-import { createSandbox } from "sinon";
 import { mock, reset, instance, when, verify, deepEqual } from "ts-mockito";
 import { polygon } from "@turf/helpers";
 import { StationService } from "../../src/services/stationService";
@@ -7,13 +6,19 @@ import { StationConverter } from "../../src/parsers/stationConverter";
 import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient";
 import GeoUtil from "../../src/util/geo";
 import { range } from "lodash";
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from "@jest/globals";
 import { BulkWriteResult } from "mongodb";
 import { IStationModelProvider } from "../../src/models/StationModelProvider";
 import { PriceDownloader } from "../../src/fetchers/priceDownloader";
 import { StationDownloader } from "../../src/fetchers/stationDownloader";
 
-const sandbox = createSandbox();
 const mockGoogleMapsClient = mock(GoogleMapsClient);
 const mockGeoUtil = mock(GeoUtil);
 const mockStationModelProvider = mock<IStationModelProvider>();
@@ -42,7 +47,7 @@ describe("StationService", () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    jest.restoreAllMocks();
   });
 
   it("should be created", () => {

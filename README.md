@@ -13,10 +13,6 @@ Available for [iOS](https://apps.apple.com/it/app/gaslow-prezzo-carburanti/id151
 - [You can find its frontend here](https://github.com/matitalatina/gaslow-app)
 - [Landing page](https://gaslow.mattianatali.it/)
 
-## Serverless deploy
-
-More information [here](https://github.com/awslabs/aws-serverless-express/tree/master/examples/basic-starter)
-
 ## Support my work
 
 Everything I made is open source.
