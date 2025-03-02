@@ -19,6 +19,8 @@ export class StationService {
     @inject(TYPES.PriceDownloader) private priceDownloader: PriceDownloader,
     @inject(TYPES.StationDownloader)
     private stationDownloader: StationDownloader,
+    @inject(TYPES.StationConverter)
+    private stationConverter: StationConverter,
   ) {}
 
   static stationsSource: string =
@@ -31,7 +33,7 @@ export class StationService {
     return Promise.all([csvStationsPromise, csvPricesPromise]).then(
       ([csvStations, csvPrices]) => {
         this.stationModel.bulkUpsertById(
-          StationConverter.merge(csvStations, csvPrices),
+          this.stationConverter.merge(csvStations, csvPrices),
         );
       },
     );

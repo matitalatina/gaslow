@@ -4,9 +4,15 @@ import { StationConverter } from "../../src/parsers/stationConverter";
 import { IStation, Price } from "../../src/models/Station";
 import { CsvPrice } from "../../src/parsers/models/csvPrice";
 import { CsvStation } from "../../src/parsers/models/csvStation";
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect, beforeEach } from "@jest/globals";
 
 describe("StationConverter", () => {
+  let stationConverter: StationConverter;
+
+  beforeEach(() => {
+    stationConverter = new StationConverter();
+  });
+
   it("should create a station from csvStations and csvPrices", () => {
     const csvStations: CsvStation[] = range(4).map((i) => ({
       id: i,
@@ -34,7 +40,7 @@ describe("StationConverter", () => {
         }),
       ),
     );
-    const stations: IStation[] = StationConverter.merge(csvStations, csvPrices);
+    const stations: IStation[] = stationConverter.merge(csvStations, csvPrices);
     expect(stations.length).toEqual(4);
     const firstStation = stations[0];
     expect(firstStation.id).toEqual(0);

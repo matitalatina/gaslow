@@ -6,11 +6,14 @@ import MockAdapter from "axios-mock-adapter";
 describe("StringDownloader", () => {
   // Create a new instance of the axios mock adapter
   const axiosMock = new MockAdapter(axios);
+  let stringDownloader: StringDownloader;
 
   // Sample response data
   const sampleResponse = "# Gaslow project\n\nSome content here";
 
   beforeEach(() => {
+    stringDownloader = new StringDownloader();
+
     // Set up the mock response before each test
     axiosMock
       .onGet(
@@ -28,7 +31,7 @@ describe("StringDownloader", () => {
   });
 
   it("should download the README.md as string (https)", async () => {
-    const file = await StringDownloader.download(
+    const file = await stringDownloader.download(
       "https://raw.githubusercontent.com/matitalatina/gaslow/master/README.md",
     );
     expect(file).toContain("# Gaslow project");
@@ -36,7 +39,7 @@ describe("StringDownloader", () => {
 
   it("should handle errors correctly", async () => {
     await expect(
-      StringDownloader.download("https://example.com/not-found"),
+      stringDownloader.download("https://example.com/not-found"),
     ).rejects.toThrow();
   });
 });

@@ -25,7 +25,10 @@ describe("Station", () => {
       Station.findOne({ id: station.id })
         .exec()
         .then((savedStation) => {
-          expect(savedStation!.id).toEqual(station.id);
+          if (!savedStation) {
+            throw new Error("Saved station is null");
+          }
+          expect(savedStation.id).toEqual(station.id);
         }),
     );
   });
@@ -140,7 +143,7 @@ describe("Station", () => {
     stations[3].prices[0].fuelType = "METANO";
     stations[4].prices[0].fuelType = "Metano HQ";
     stations[4].prices[0].fuelType = "";
-    stations[4].prices[0].fuelType = undefined;
+    stations[4].prices[0].fuelType = undefined as unknown as string;
     return Station.bulkUpsertById(stations)
       .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
       .then((ss) =>

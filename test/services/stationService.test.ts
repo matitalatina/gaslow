@@ -19,6 +19,7 @@ const mockGeoUtil = mock(GeoUtil);
 const mockStationModelProvider = mock<IStationModelProvider>();
 const mockPriceDownloader = mock(PriceDownloader);
 const mockStationDownloader = mock(StationDownloader);
+const mockStationConverter = mock(StationConverter);
 let service: StationService;
 
 describe("StationService", () => {
@@ -28,6 +29,7 @@ describe("StationService", () => {
     reset(mockStationModelProvider);
     reset(mockPriceDownloader);
     reset(mockStationDownloader);
+    reset(mockStationConverter);
 
     service = new StationService(
       instance(mockGoogleMapsClient),
@@ -35,6 +37,7 @@ describe("StationService", () => {
       instance(mockStationModelProvider),
       instance(mockPriceDownloader),
       instance(mockStationDownloader),
+      instance(mockStationConverter),
     );
   });
 
@@ -56,9 +59,9 @@ describe("StationService", () => {
     when(mockPriceDownloader.download()).thenResolve(csvPrices);
 
     // Mock the StationConverter.merge method
-    const stationConverter = sandbox
-      .stub(StationConverter, "merge")
-      .returns(mergedStations);
+    when(
+      mockStationConverter.merge(deepEqual(csvStations), deepEqual(csvPrices)),
+    ).thenReturn(mergedStations);
 
     // Use ts-mockito to mock the bulkUpsertById method with a proper BulkWriteResult
     const bulkWriteResult = {
@@ -81,9 +84,9 @@ describe("StationService", () => {
     verify(mockPriceDownloader.download()).once();
 
     // Verify that the StationConverter.merge method was called with the correct arguments
-    expect(stationConverter.calledOnceWith(csvStations, csvPrices)).toEqual(
-      true,
-    );
+    verify(
+      mockStationConverter.merge(deepEqual(csvStations), deepEqual(csvPrices)),
+    ).once();
 
     // Verify that bulkUpsertById was called with the correct arguments
     verify(

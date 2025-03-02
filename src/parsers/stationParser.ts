@@ -1,8 +1,10 @@
 import { parseCsvSkip2Lines } from "./csvUtils";
 import { CsvStation } from "./models/csvStation";
+import { injectable } from "inversify";
 
-export default class StationParser {
-  static parse(csv: string): Promise<Array<CsvStation>> {
+@injectable()
+export class StationParser {
+  parse(csv: string): Promise<Array<CsvStation>> {
     return parseCsvSkip2Lines(csv).then((csvLines) =>
       csvLines.map((row) => ({
         id: parseInt(row[0], 10),

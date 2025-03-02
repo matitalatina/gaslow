@@ -1,12 +1,18 @@
 import moment from "moment";
 import { PriceParser } from "../../src/parsers/priceParser";
 import { getFileAsString } from "../utils/files";
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect, beforeEach } from "@jest/globals";
 
 describe("PriceParser", () => {
+  let priceParser: PriceParser;
+
+  beforeEach(() => {
+    priceParser = new PriceParser();
+  });
+
   it("should parse prices, removing first two useless lines", (done) => {
     getFileAsString("test/resources/prezzo_alle_8.csv")
-      .then((csvString) => PriceParser.parse(csvString))
+      .then((csvString) => priceParser.parse(csvString))
       .then((csvData) => {
         expect(csvData.length).toEqual(7);
         done();
@@ -18,7 +24,7 @@ describe("PriceParser", () => {
 
   it("should convert correctly a price", (done) => {
     getFileAsString("test/resources/prezzo_alle_8.csv")
-      .then((csvString) => PriceParser.parse(csvString))
+      .then((csvString) => priceParser.parse(csvString))
       .then((prices) => {
         const price = prices[0];
         expect(price.idStation).toEqual(3464);

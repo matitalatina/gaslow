@@ -1,9 +1,11 @@
 import moment from "moment";
 import { CsvPrice } from "./models/csvPrice";
 import { parseCsvSkip2Lines } from "./csvUtils";
+import { injectable } from "inversify";
 
+@injectable()
 export class PriceParser {
-  static parse(csv: string): Promise<Array<CsvPrice>> {
+  parse(csv: string): Promise<Array<CsvPrice>> {
     return parseCsvSkip2Lines(csv).then((csvList: Array<string[]>) =>
       csvList.map((csvRow) => ({
         idStation: parseInt(csvRow[0], 10),

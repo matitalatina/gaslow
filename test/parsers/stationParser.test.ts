@@ -1,15 +1,17 @@
 import { CsvStation } from "../../src/parsers/models/csvStation";
-import StationParser from "../../src/parsers/stationParser";
+import { StationParser } from "../../src/parsers/stationParser";
 import { getFileAsString } from "../utils/files";
 import { describe, it, expect, beforeEach } from "@jest/globals";
 
 describe("StationParser", () => {
   let parsedStations: Promise<Array<CsvStation>>;
+  let stationParser: StationParser;
 
   beforeEach(() => {
+    stationParser = new StationParser();
     parsedStations = getFileAsString(
       "test/resources/anagrafica_impianti_attivi.csv",
-    ).then((csvString) => StationParser.parse(csvString));
+    ).then((csvString) => stationParser.parse(csvString));
   });
 
   it("should parse the csv skipping the first two lines and possible errors", (done) => {

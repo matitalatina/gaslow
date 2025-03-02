@@ -2,9 +2,11 @@ import { keyBy } from "lodash";
 import { GeoType, IStation, Price } from "../models/Station";
 import { CsvPrice } from "./models/csvPrice";
 import { CsvStation } from "./models/csvStation";
+import { injectable } from "inversify";
 
+@injectable()
 export class StationConverter {
-  static merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): IStation[] {
+  merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): IStation[] {
     const stations: IStation[] = csvStations.map((s) => {
       const station = {
         prices: [] as Price[],
