@@ -3,7 +3,7 @@ VERSION=$(shell git log -1 --pretty=%h)
 docker-build:
 	docker build -t gaslow:${VERSION} .
 
-docker-start:
+docker-start: docker-build
 	docker stop gaslow; docker rm gaslow || true
 	docker run --name gaslow --init -p 3000:3000 -v $(shell pwd)/.env:/usr/src/app/.env:ro gaslow:${VERSION}
 
