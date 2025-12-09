@@ -19,8 +19,8 @@ import {
   expect,
   beforeEach,
   afterEach,
-  jest,
-} from "@jest/globals";
+  vi,
+} from "vitest";
 
 const mockStationService = mock(StationService);
 
@@ -38,7 +38,7 @@ describe("StationController", () => {
   it("should update stations", () => {
     when(mockStationService.updateStationCollection()).thenResolve(undefined);
     const req: any = {};
-    const json = jest.fn();
+    const json = vi.fn();
     const res: any = {
       json,
     };
@@ -58,7 +58,7 @@ describe("StationController", () => {
         lng: 2.0,
       },
     };
-    const json = jest.fn();
+    const json = vi.fn();
     const res: any = {
       json,
     };
@@ -80,7 +80,7 @@ describe("StationController", () => {
         to: "-3.3,4.4",
       },
     };
-    const json = jest.fn();
+    const json = vi.fn();
     const res: any = {
       json,
     };
@@ -98,7 +98,7 @@ describe("StationController", () => {
         ids: "1,2",
       },
     };
-    const json = jest.fn();
+    const json = vi.fn();
     const res: any = {
       json,
     };

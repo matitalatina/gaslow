@@ -12,8 +12,8 @@ import {
   expect,
   beforeEach,
   afterEach,
-  jest,
-} from "@jest/globals";
+  vi,
+} from "vitest";
 import { BulkWriteResult } from "mongodb";
 import { IStationModelProvider } from "../../src/models/StationModelProvider";
 import { PriceDownloader } from "../../src/fetchers/priceDownloader";
@@ -47,7 +47,7 @@ describe("StationService", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("should be created", () => {

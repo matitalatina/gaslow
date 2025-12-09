@@ -4,7 +4,7 @@ import { StationConverter } from "../../src/parsers/stationConverter";
 import { IStation, Price } from "../../src/models/Station";
 import { CsvPrice } from "../../src/parsers/models/csvPrice";
 import { CsvStation } from "../../src/parsers/models/csvStation";
-import { describe, it, expect, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach } from "vitest";
 
 describe("StationConverter", () => {
   let stationConverter: StationConverter;

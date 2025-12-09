@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["reflect-metadata", "jest", "node"]
+    "types": ["reflect-metadata", "vitest/globals", "node"]
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"]

@@ -1,5 +1,5 @@
 import { StringDownloader } from "../../src/fetchers/stringDownloader";
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 

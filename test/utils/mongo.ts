@@ -1,21 +1,22 @@
 import mongoose from "mongoose";
+import { MongoMemoryServer } from "mongodb-memory-server";
 
-const mongoUrl = "mongodb://localhost:27017/gaslow_test";
+let mongoServer: MongoMemoryServer;
 
-export function connectMongoTest(): Promise<void> {
-  return mongoose
-    .connect(mongoUrl)
-    .then(() => {
-      /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
-      console.log("Test MongoDB connected successfully");
-    })
-    .catch((err) => {
-      console.log(
-        `MongoDB connection error. Please make sure MongoDB is running. ${err}`,
-      );
-    });
+export async function connectMongoTest(): Promise<void> {
+  // Create an in-memory MongoDB instance
+  mongoServer = await MongoMemoryServer.create();
+  const mongoUri = mongoServer.getUri();
+
+  await mongoose.connect(mongoUri);
+  console.log("Test MongoDB (in-memory) connected successfully");
 }
 
-export function closeMongoTest(): Promise<void> {
-  return mongoose.connection.close();
+export async function closeMongoTest(): Promise<void> {
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.connection.close();
+  }
+  if (mongoServer) {
+    await mongoServer.stop();
+  }
 }

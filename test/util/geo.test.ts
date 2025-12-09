@@ -1,5 +1,5 @@
 import GeoUtil from "../../src/util/geo";
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "vitest";
 
 const geoUtil = new GeoUtil();
 

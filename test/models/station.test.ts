@@ -11,7 +11,7 @@ import {
   beforeEach,
   beforeAll,
   afterAll,
-} from "@jest/globals";
+} from "vitest";
 
 describe("Station", () => {
   beforeAll(connectMongoTest);
