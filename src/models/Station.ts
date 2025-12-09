@@ -1,6 +1,6 @@
-import { Polygon } from "geojson";
+import type { Polygon } from "geojson";
 import moment from "moment";
-import { BulkWriteResult } from "mongodb";
+import type { BulkWriteResult } from "mongodb";
 import { Document, model, Model, Schema } from "mongoose";
 
 export enum GeoType {

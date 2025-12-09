@@ -1,7 +1,8 @@
-import { keyBy } from "lodash";
-import { GeoType, IStation, Price } from "../models/Station";
-import { CsvPrice } from "./models/csvPrice";
-import { CsvStation } from "./models/csvStation";
+import { keyBy } from "lodash-es";
+import { GeoType } from "../models/Station.js";
+import type { IStation, Price } from "../models/Station.js";
+import type { CsvPrice } from "./models/csvPrice.js";
+import type { CsvStation } from "./models/csvStation.js";
 import { injectable } from "inversify";
 
 @injectable()

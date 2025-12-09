@@ -1,4 +1,4 @@
-import { StringDownloader } from "../../src/fetchers/stringDownloader";
+import { StringDownloader } from "../../src/fetchers/stringDownloader.js";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";

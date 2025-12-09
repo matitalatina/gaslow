@@ -1,6 +1,6 @@
 import moment from "moment";
-import { CsvPrice } from "./models/csvPrice";
-import { parseCsvSkip2Lines } from "./csvUtils";
+import type { CsvPrice } from "./models/csvPrice.js";
+import { parseCsvSkip2Lines } from "./csvUtils.js";
 import { injectable } from "inversify";
 
 @injectable()

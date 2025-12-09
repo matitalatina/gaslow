@@ -1,17 +1,11 @@
-import { range } from "lodash";
+import { range } from "lodash-es";
 import moment from "moment";
-import { Station, IStation, FuelTypeEnum } from "../../src/models/Station";
-import { aStation, aPrice } from "../utils/fixtures";
+import { Station, FuelTypeEnum } from "../../src/models/Station.js";
+import type { IStation } from "../../src/models/Station.js";
+import { aStation, aPrice } from "../utils/fixtures.js";
 
-import { connectMongoTest, closeMongoTest } from "../utils/mongo";
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  beforeAll,
-  afterAll,
-} from "vitest";
+import { connectMongoTest, closeMongoTest } from "../utils/mongo.js";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 
 describe("Station", () => {
   beforeAll(connectMongoTest);

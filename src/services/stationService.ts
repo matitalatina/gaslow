@@ -1,13 +1,13 @@
 import { injectable, inject } from "inversify";
-import { GoogleMapsClient } from "../clients/GoogleMapsClient";
-import { IStation } from "../models/Station";
-import { StationConverter } from "../parsers/stationConverter";
-import { TYPES } from "../di/types";
-import ILatLng from "../models/ILatLng";
-import GeoUtil from "../util/geo";
-import type { IStationModelProvider } from "../models/StationModelProvider";
-import { PriceDownloader } from "../fetchers/priceDownloader";
-import { StationDownloader } from "../fetchers/stationDownloader";
+import { GoogleMapsClient } from "../clients/GoogleMapsClient.js";
+import type { IStation } from "../models/Station.js";
+import { StationConverter } from "../parsers/stationConverter.js";
+import { TYPES } from "../di/types.js";
+import type ILatLng from "../models/ILatLng.js";
+import GeoUtil from "../util/geo.js";
+import type { IStationModelProvider } from "../models/StationModelProvider.js";
+import { PriceDownloader } from "../fetchers/priceDownloader.js";
+import { StationDownloader } from "../fetchers/stationDownloader.js";
 
 @injectable()
 export class StationService {

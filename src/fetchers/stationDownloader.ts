@@ -1,8 +1,8 @@
-import { CsvStation } from "../parsers/models/csvStation";
-import { StationParser } from "../parsers/stationParser";
-import { StringDownloader } from "./stringDownloader";
+import type { CsvStation } from "../parsers/models/csvStation.js";
+import { StationParser } from "../parsers/stationParser.js";
+import { StringDownloader } from "./stringDownloader.js";
 import { inject, injectable } from "inversify";
-import { TYPES } from "../di/types";
+import { TYPES } from "../di/types.js";
 
 @injectable()
 export class StationDownloader {

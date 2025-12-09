@@ -1,4 +1,4 @@
-import ILatLng from "./ILatLng";
+import type ILatLng from "./ILatLng.js";
 
 export default interface IStep {
   from: ILatLng;

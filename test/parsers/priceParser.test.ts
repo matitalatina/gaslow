@@ -1,6 +1,6 @@
 import moment from "moment";
-import { PriceParser } from "../../src/parsers/priceParser";
-import { getFileAsString } from "../utils/files";
+import { PriceParser } from "../../src/parsers/priceParser.js";
+import { getFileAsString } from "../utils/files.js";
 import { describe, it, expect, beforeEach } from "vitest";
 
 describe("PriceParser", () => {

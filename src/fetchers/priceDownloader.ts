@@ -1,7 +1,7 @@
-import { TYPES } from "../di/types";
-import { CsvPrice } from "../parsers/models/csvPrice";
-import { PriceParser } from "../parsers/priceParser";
-import { StringDownloader } from "./stringDownloader";
+import { TYPES } from "../di/types.js";
+import type { CsvPrice } from "../parsers/models/csvPrice.js";
+import { PriceParser } from "../parsers/priceParser.js";
+import { StringDownloader } from "./stringDownloader.js";
 import { inject, injectable } from "inversify";
 
 @injectable()

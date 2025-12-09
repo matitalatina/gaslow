@@ -1,5 +1,5 @@
-import { parseCsvSkip2Lines } from "./csvUtils";
-import { CsvStation } from "./models/csvStation";
+import { parseCsvSkip2Lines } from "./csvUtils.js";
+import type { CsvStation } from "./models/csvStation.js";
 import { injectable } from "inversify";
 
 @injectable()

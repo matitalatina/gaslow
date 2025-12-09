@@ -4,13 +4,13 @@ import compression from "compression"; // compresses requests
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import { MONGODB_URI } from "./util/secrets";
+import { MONGODB_URI } from "./util/secrets.js";
 
 // Controllers (route handlers)
-import "./controllers/stationController";
+import "./controllers/stationController.js";
 import { InversifyExpressServer } from "inversify-express-utils";
-import { myContainer } from "./di/inversify.config";
-import { Request, Response, NextFunction } from "express";
+import { myContainer } from "./di/inversify.config.js";
+import type { Request, Response, NextFunction } from "express";
 
 // Load environment variables from .env file, where API keys and passwords are configured
 dotenv.config({ path: ".env.example" });

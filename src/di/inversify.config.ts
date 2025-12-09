@@ -1,18 +1,16 @@
 import { Container } from "inversify";
-import { GoogleMapsClient } from "../clients/GoogleMapsClient";
-import {
-  IStationModelProvider,
-  StationModelProvider,
-} from "../models/StationModelProvider";
-import { StationService } from "../services/stationService";
-import GeoUtil from "../util/geo";
-import { TYPES } from "./types";
-import { PriceDownloader } from "../fetchers/priceDownloader";
-import { StationDownloader } from "../fetchers/stationDownloader";
-import { StringDownloader } from "../fetchers/stringDownloader";
-import { PriceParser } from "../parsers/priceParser";
-import { StationParser } from "../parsers/stationParser";
-import { StationConverter } from "../parsers/stationConverter";
+import { GoogleMapsClient } from "../clients/GoogleMapsClient.js";
+import type { IStationModelProvider } from "../models/StationModelProvider.js";
+import { StationModelProvider } from "../models/StationModelProvider.js";
+import { StationService } from "../services/stationService.js";
+import GeoUtil from "../util/geo.js";
+import { TYPES } from "./types.js";
+import { PriceDownloader } from "../fetchers/priceDownloader.js";
+import { StationDownloader } from "../fetchers/stationDownloader.js";
+import { StringDownloader } from "../fetchers/stringDownloader.js";
+import { PriceParser } from "../parsers/priceParser.js";
+import { StationParser } from "../parsers/stationParser.js";
+import { StationConverter } from "../parsers/stationConverter.js";
 
 const myContainer = new Container();
 myContainer.bind<StationService>(TYPES.StationService).to(StationService);

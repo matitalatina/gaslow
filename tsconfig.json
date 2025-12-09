@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "module": "node16",
-    "moduleResolution": "node16",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
-    "target": "es2020",
+    "target": "esnext",
     "noImplicitAny": true,
     "sourceMap": true,
     "types": ["reflect-metadata", "node"],
@@ -11,6 +11,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "outDir": "dist"
   },
   "include": ["src/**/*"],

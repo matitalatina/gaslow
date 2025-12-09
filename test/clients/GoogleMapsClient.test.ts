@@ -1,8 +1,8 @@
 import MockAdapter from "axios-mock-adapter";
 import axios from "axios";
-import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient";
-import { GOOGLE_API_KEY } from "../../src/util/secrets";
-import { aGoogleMapsApiDirectionResponse } from "../utils/fixtures";
+import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient.js";
+import { GOOGLE_API_KEY } from "../../src/util/secrets.js";
+import { aGoogleMapsApiDirectionResponse } from "../utils/fixtures.js";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 const axiosMock = new MockAdapter(axios);

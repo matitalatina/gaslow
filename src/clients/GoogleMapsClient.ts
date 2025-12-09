@@ -1,7 +1,7 @@
 import axios from "axios";
 import { injectable } from "inversify";
-import ILatLng from "../models/ILatLng";
-import { GOOGLE_API_KEY } from "../util/secrets";
+import type ILatLng from "../models/ILatLng.js";
+import { GOOGLE_API_KEY } from "../util/secrets.js";
 
 @injectable()
 export class GoogleMapsClient {

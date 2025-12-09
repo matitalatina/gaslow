@@ -7,8 +7,8 @@ import {
   response,
 } from "inversify-express-utils";
 import { inject } from "inversify";
-import { TYPES } from "../di/types";
-import { StationService } from "../services/stationService";
+import { TYPES } from "../di/types.js";
+import { StationService } from "../services/stationService.js";
 
 @controller("/stations")
 export class StationsController {

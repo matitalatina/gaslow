@@ -1,6 +1,6 @@
-import { CsvStation } from "../../src/parsers/models/csvStation";
-import { StationParser } from "../../src/parsers/stationParser";
-import { getFileAsString } from "../utils/files";
+import type { CsvStation } from "../../src/parsers/models/csvStation.js";
+import { StationParser } from "../../src/parsers/stationParser.js";
+import { getFileAsString } from "../utils/files.js";
 import { describe, it, expect, beforeEach } from "vitest";
 
 describe("StationParser", () => {

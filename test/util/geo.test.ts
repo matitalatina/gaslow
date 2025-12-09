@@ -1,4 +1,4 @@
-import GeoUtil from "../../src/util/geo";
+import GeoUtil from "../../src/util/geo.js";
 import { describe, it, expect } from "vitest";
 
 const geoUtil = new GeoUtil();

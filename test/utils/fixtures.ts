@@ -1,8 +1,9 @@
 import fs from "fs";
 import moment from "moment";
-import { IStationDocument, Price, Station } from "../../src/models/Station";
-import { CsvPrice } from "../../src/parsers/models/csvPrice";
-import { CsvStation } from "../../src/parsers/models/csvStation";
+import type { IStationDocument, Price } from "../../src/models/Station.js";
+import { Station } from "../../src/models/Station.js";
+import type { CsvPrice } from "../../src/parsers/models/csvPrice.js";
+import type { CsvStation } from "../../src/parsers/models/csvStation.js";
 
 export function aPrice(): Price {
   return {

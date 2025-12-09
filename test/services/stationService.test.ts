@@ -1,23 +1,16 @@
 import { mock, reset, instance, when, verify, deepEqual } from "ts-mockito";
 import { polygon } from "@turf/helpers";
-import { StationService } from "../../src/services/stationService";
-import { aStation, aCsvPrice, aCsvStation } from "../utils/fixtures";
-import { StationConverter } from "../../src/parsers/stationConverter";
-import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient";
-import GeoUtil from "../../src/util/geo";
-import { range } from "lodash";
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  vi,
-} from "vitest";
-import { BulkWriteResult } from "mongodb";
-import { IStationModelProvider } from "../../src/models/StationModelProvider";
-import { PriceDownloader } from "../../src/fetchers/priceDownloader";
-import { StationDownloader } from "../../src/fetchers/stationDownloader";
+import { StationService } from "../../src/services/stationService.js";
+import { aStation, aCsvPrice, aCsvStation } from "../utils/fixtures.js";
+import { StationConverter } from "../../src/parsers/stationConverter.js";
+import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient.js";
+import GeoUtil from "../../src/util/geo.js";
+import { range } from "lodash-es";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import type { BulkWriteResult } from "mongodb";
+import type { IStationModelProvider } from "../../src/models/StationModelProvider.js";
+import { PriceDownloader } from "../../src/fetchers/priceDownloader.js";
+import { StationDownloader } from "../../src/fetchers/stationDownloader.js";
 
 const mockGoogleMapsClient = mock(GoogleMapsClient);
 const mockGeoUtil = mock(GeoUtil);

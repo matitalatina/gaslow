@@ -9,18 +9,11 @@ import {
   verify,
   anyNumber,
 } from "ts-mockito";
-import { StationService } from "../../src/services/stationService";
-import { StationsController } from "../../src/controllers/stationController";
-import { aStation } from "../utils/fixtures";
-import { range } from "lodash";
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  vi,
-} from "vitest";
+import { StationService } from "../../src/services/stationService.js";
+import { StationsController } from "../../src/controllers/stationController.js";
+import { aStation } from "../utils/fixtures.js";
+import { range } from "lodash-es";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 const mockStationService = mock(StationService);
 

@@ -2,7 +2,7 @@ import { buffer } from "@turf/buffer";
 import { lineString } from "@turf/helpers";
 import { injectable } from "inversify";
 import polyline from "@mapbox/polyline";
-import { Polygon } from "geojson";
+import type { Polygon } from "geojson";
 
 @injectable()
 export default class GeoUtil {

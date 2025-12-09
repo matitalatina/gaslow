@@ -1,9 +1,9 @@
 import moment from "moment";
-import { range, flatten, find } from "lodash";
-import { StationConverter } from "../../src/parsers/stationConverter";
-import { IStation, Price } from "../../src/models/Station";
-import { CsvPrice } from "../../src/parsers/models/csvPrice";
-import { CsvStation } from "../../src/parsers/models/csvStation";
+import { range, flatten, find } from "lodash-es";
+import { StationConverter } from "../../src/parsers/stationConverter.js";
+import type { IStation, Price } from "../../src/models/Station.js";
+import type { CsvPrice } from "../../src/parsers/models/csvPrice.js";
+import type { CsvStation } from "../../src/parsers/models/csvStation.js";
 import { describe, it, expect, beforeEach } from "vitest";
 
 describe("StationConverter", () => {
