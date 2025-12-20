@@ -12,4 +12,3 @@ services:
       - traefik.http.routers.gaslow.tls=true
       - traefik.http.routers.gaslow.tls.certresolver=myresolver
       - traefik.http.services.gaslow.loadbalancer.server.port=3000
-      - com.centurylinklabs.watchtower.enable=true
