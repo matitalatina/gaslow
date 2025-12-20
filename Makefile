@@ -4,18 +4,10 @@ docker-build:
 	docker build -t gaslow:${VERSION} .
 
 docker-start: docker-build
-	docker stop gaslow; docker rm gaslow || true
-	docker run --name gaslow --init -p 3000:3000 -v $(shell pwd)/.env:/usr/src/app/.env:ro gaslow:${VERSION}
+	VERSION=$(VERSION) docker compose up -d
 
 docker-load-remote:
-	docker buildx build --platform=linux/amd64 -t gaslow:${VERSION} -o type=docker,dest=- . | gzip | ssh fun-met-oracle 'docker load'
+	docker buildx build --platform=linux/amd64 -t gaslow:${VERSION} -o type=docker,dest=- . | gzip | ssh fun-met-oracle2 'docker load'
 
 docker-start-remote: docker-load-remote
-	ssh fun-met-oracle 'docker stop gaslow; docker rm gaslow; \
-		docker run --name gaslow --init -d -p 3000:3000 \
-		-v /home/ubuntu/repos/gaslow/.env:/usr/src/app/.env:ro \
-		--restart always \
-		--env "VIRTUAL_HOST=gaslow-api.mattianatali.com" \
-    	--env "VIRTUAL_PORT=3000" \
-    	--env "LETSENCRYPT_HOST=gaslow-api.mattianatali.com" \
-		gaslow:${VERSION}'
+	ssh fun-met-oracle2 'cd ~/repos/gaslow && VERSION=$(VERSION) docker compose up -d'

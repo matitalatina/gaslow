@@ -1,0 +1,15 @@
+services:
+  gaslow:
+    image: gaslow:${VERSION}
+    volumes:
+      - "/home/ubuntu/repos/gaslow/.env:/usr/src/app/.env:ro"
+    environment:
+      - TZ=Europe/Rome
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.gaslow.rule=Host(`gaslow-api.mattianatali.com`)
+      - traefik.http.routers.gaslow.tls=true
+      - traefik.http.routers.gaslow.tls.certresolver=myresolver
+      - traefik.http.services.gaslow.loadbalancer.server.port=3000
+      - com.centurylinklabs.watchtower.enable=true
