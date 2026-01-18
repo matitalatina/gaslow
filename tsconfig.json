@@ -7,7 +7,7 @@
     "noImplicitAny": true,
     "sourceMap": true,
     "types": ["reflect-metadata", "node"],
-    "lib": ["es2020"],
+    "lib": ["es2022"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "isolatedModules": true,

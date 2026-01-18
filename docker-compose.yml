@@ -2,10 +2,12 @@ services:
   gaslow:
     image: gaslow:${VERSION}
     volumes:
-      - "/home/ubuntu/repos/gaslow/.env:/usr/src/app/.env:ro"
+      - ".env:/usr/src/app/.env:ro"
     environment:
       - TZ=Europe/Rome
     restart: unless-stopped
+    # ports:
+    #   - "3000:3000"
     labels:
       - traefik.enable=true
       - traefik.http.routers.gaslow.rule=Host(`gaslow-api.mattianatali.com`)

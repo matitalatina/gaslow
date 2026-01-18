@@ -8,15 +8,15 @@ import { MONGODB_URI } from "./util/secrets.js";
 
 // Controllers (route handlers)
 import "./controllers/stationController.js";
-import { InversifyExpressServer } from "inversify-express-utils";
+import { InversifyExpressHttpAdapter } from "@inversifyjs/http-express";
 import { myContainer } from "./di/inversify.config.js";
 import type { Request, Response, NextFunction } from "express";
 
 // Load environment variables from .env file, where API keys and passwords are configured
 dotenv.config({ path: ".env.example" });
 
-// Create Express server
-const server = new InversifyExpressServer(myContainer);
+// Create Express server adapter
+const adapter = new InversifyExpressHttpAdapter(myContainer);
 
 // Connect to MongoDB
 const mongoUrl = MONGODB_URI;
@@ -34,21 +34,27 @@ mongoose
     // process.exit();
   });
 
-server.setConfig((app) => {
-  app.set("port", process.env.PORT || 3000);
-  app.use(compression());
-  app.use(bodyParser.json());
+import express from "express";
+const app = express();
+app.set("port", process.env.PORT || 3000);
+app.use(compression());
+app.use(bodyParser.json());
+
+// Pass the configured app to the adapter
+// The adapter will attach routes to this app
+const builder = new InversifyExpressHttpAdapter(myContainer, {}, app);
+
+export const getApp = () =>builder.build().then((configuredApp) => {
+  // Register the error handler middleware correctly
+  // Error handlers need to be registered last with all 4 parameters
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  configuredApp.use(
+    (err: Error, req: Request, res: Response, _next: NextFunction) => {
+      console.error("Error:", err);
+      res.status(500).json({ error: err.message || "Internal Server Error" });
+    },
+  );
+  return configuredApp;
 });
 
-// Express configuration
-const app = server.build();
-
-// Register the error handler middleware correctly
-// Error handlers need to be registered last with all 4 parameters
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  console.error("Error:", err);
-  res.status(500).json({ error: err.message || "Internal Server Error" });
-});
-
-export default app;
+export default getApp;

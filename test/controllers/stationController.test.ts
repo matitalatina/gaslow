@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { cleanUpMetadata } from "inversify-express-utils";
+
 import {
   mock,
   instance,
@@ -20,9 +20,7 @@ const mockStationService = mock(StationService);
 const controller = new StationsController(instance(mockStationService));
 
 describe("StationController", () => {
-  beforeEach(() => {
-    cleanUpMetadata();
-  });
+
 
   afterEach(() => {
     reset(mockStationService);

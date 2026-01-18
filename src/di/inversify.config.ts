@@ -1,5 +1,6 @@
 import { Container } from "inversify";
 import { GoogleMapsClient } from "../clients/GoogleMapsClient.js";
+import { StationsController } from "../controllers/stationController.js";
 import type { IStationModelProvider } from "../models/StationModelProvider.js";
 import { StationModelProvider } from "../models/StationModelProvider.js";
 import { StationService } from "../services/stationService.js";
@@ -13,6 +14,7 @@ import { StationParser } from "../parsers/stationParser.js";
 import { StationConverter } from "../parsers/stationConverter.js";
 
 const myContainer = new Container();
+myContainer.bind(StationsController).toSelf();
 myContainer.bind<StationService>(TYPES.StationService).to(StationService);
 myContainer.bind<GoogleMapsClient>(TYPES.GoogleMapsClient).to(GoogleMapsClient);
 myContainer.bind<GeoUtil>(TYPES.GeoUtil).to(GeoUtil);
