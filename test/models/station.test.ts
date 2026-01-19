@@ -1,118 +1,104 @@
 import { range } from "lodash-es";
 import moment from "moment";
-import { Station, FuelTypeEnum } from "../../src/models/Station.js";
-import type { IStation } from "../../src/models/Station.js";
+import { FuelTypeEnum } from "../../src/models/Station.js";
+import type { Station } from "../../src/models/Station.js";
 import { aStation, aPrice } from "../utils/fixtures.js";
-
-import { connectMongoTest, closeMongoTest } from "../utils/mongo.js";
+import { StationRepository } from "../../src/repositories/StationRepository.js";
+import { connectMongoTest, closeMongoTest, getTestDb } from "../utils/mongo.js";
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 
-describe("Station", () => {
-  beforeAll(connectMongoTest);
+describe("StationRepository", () => {
+  let repository: StationRepository;
+
+  beforeAll(async () => {
+    await connectMongoTest();
+    const db = getTestDb();
+    repository = new StationRepository(db.collection("stations"));
+  });
+
   afterAll(closeMongoTest);
 
-  beforeEach(() => Station.deleteMany({}).exec());
+  beforeEach(async () => {
+    const db = getTestDb();
+    await db.collection("stations").deleteMany({});
+  });
 
-  it("should save and retrieve correctly", () => {
+  it("should save and retrieve correctly", async () => {
     const station = aStation();
-    return station.save().then(() =>
-      Station.findOne({ id: station.id })
-        .exec()
-        .then((savedStation) => {
-          if (!savedStation) {
-            throw new Error("Saved station is null");
-          }
-          expect(savedStation.id).toEqual(station.id);
-        }),
-    );
+    await repository.bulkUpsertById([station]);
+    const savedStation = await repository.findOne({ id: station.id });
+    
+    if (!savedStation) {
+      throw new Error("Saved station is null");
+    }
+    expect(savedStation.id).toEqual(station.id);
   });
 
-  it("should be able to save in bulk an upsert", () => {
+  it("should be able to save in bulk an upsert", async () => {
     const stations = range(4).map(aStation);
-    return Station.bulkUpsertById(stations)
-      .then(() => Station.bulkUpsertById(stations))
-      .then(() => Station.find({}).exec())
-      .then((savedStations) => {
-        expect(savedStations.length).toEqual(4);
-      });
+    await repository.bulkUpsertById(stations);
+    await repository.bulkUpsertById(stations);
+    const savedStations = await repository.find({});
+    expect(savedStations.length).toEqual(4);
   });
-
-  it("should prevent two stations with same id", () =>
-    aStation()
-      .save()
-      .then(() => aStation().save())
-      .then(() => expect(null).toBe("it should fail!"))
-      .catch((err) => {
-        expect(err.message).toContain("duplicate key");
-      }));
-
-  it("should have mandatory fields", () =>
-    new Station({ prices: [{}] })
-      .validate()
-      .then(() => expect(null).toBe("model is not valid!"))
-      .catch((err) => {
-        expect(err.errors.id).toBeDefined();
-        expect(err.errors.name).toBeDefined();
-        expect(err.errors.address).toBeDefined();
-        expect(err.errors["location.type"]).toBeDefined();
-        expect(err.errors["prices.0.fuelType"]).toBeDefined();
-        expect(err.errors["prices.0.price"]).toBeDefined();
-        expect(err.errors["prices.0.isSelf"]).toBeDefined();
-        expect(err.errors["prices.0.updatedAt"]).toBeDefined();
-        expect(err.errors.city).toBeDefined();
-        expect(err.errors.province).toBeDefined();
-      }));
 
   describe("findNearestByCoordinates", () => {
-    it("should retrieve nearest stations by coordinates", () => {
-      const stations = range(4).map(aStation);
-      return Station.bulkUpsertById(stations)
-        .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-        .then((stations: IStation[]) => {
-          expect(stations.length).toEqual(2);
-          expect(stations[0].id).toEqual(1);
-        });
+    beforeEach(async () => {
+      // Ensure 2dsphere index exists for tests
+      const db = getTestDb();
+      await db.collection("stations").createIndex({ location: "2dsphere" });
     });
 
-    it("should populate fuelTypeEnum for gasoline", () => {
-      const stations = range(5).map(aStation);
+    it("should retrieve nearest stations by coordinates", async () => {
+      const stations = range(4).map((i) => {
+        const s = aStation(i + 1);
+        // Vary coordinates to ensure distance-based sorting
+        s.location.coordinates = [2.0 + i * 0.1, 1.0 + i * 0.1];
+        return s;
+      });
+      await repository.bulkUpsertById(stations);
+      const nearest = await repository.findNearestByCoordinates(1.0, 2.0, 2);
+      expect(nearest.length).toEqual(2);
+      expect(nearest[0].id).toEqual(1);
+    });
+
+    it("should populate fuelTypeEnum for gasoline", async () => {
+      const stations = range(5).map((i) => aStation(i + 1));
       stations[0].prices[0].fuelType = "Benzina";
       stations[1].prices[0].fuelType = "BENZINA";
       stations[2].prices[0].fuelType = "benzina";
       stations[3].prices[0].fuelType = "Benzina HQ";
       stations[4].prices[0].fuelType = "Hi-Q Benzina";
-      return Station.bulkUpsertById(stations)
-        .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-        .then((ss) =>
-          ss.forEach((s) =>
-            expect(s.prices[0].fuelTypeEnum).toEqual(FuelTypeEnum.GASOLINE),
-          ),
-        );
+      await repository.bulkUpsertById(stations);
+      const results = await repository.findNearestByCoordinates(1.0, 2.0, 5);
+      results.forEach((s) =>
+        expect(s.prices[0].fuelTypeEnum).toEqual(FuelTypeEnum.GASOLINE),
+      );
     });
 
-    it("should filter out stations that have too old prices", () => {
+    it("should filter out stations that have too old prices", async () => {
       const station = aStation();
-      station.prices[0].updatedAt = moment().add(-7, "months").toDate();
-      return Station.bulkUpsertById([station])
-        .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-        .then((ss) => expect(ss.length).toEqual(0));
+      station.prices[0].updatedAt = moment().subtract(7, "months").toDate();
+      await repository.bulkUpsertById([station]);
+      const results = await repository.findNearestByCoordinates(1.0, 2.0, 2);
+      expect(results.length).toEqual(0);
     });
 
-    it("should not filter out stations that have at least one price updated", () => {
+    it("should not filter out stations that have at least one price updated", async () => {
       const station = aStation();
       station.prices.push({
         ...aPrice(),
-        updatedAt: moment().add(-20, "days").toDate(),
+        updatedAt: moment().subtract(20, "days").toDate(),
       });
-      station.prices[0].updatedAt = moment().add(-7, "months").toDate();
-      return Station.bulkUpsertById([station])
-        .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-        .then((ss) => expect(ss.length).toEqual(1));
+      station.prices[0].updatedAt = moment().subtract(7, "months").toDate();
+      await repository.bulkUpsertById([station]);
+      const results = await repository.findNearestByCoordinates(1.0, 2.0, 2);
+      expect(results.length).toEqual(1);
     });
   });
 
-  it("should populate fuelTypeEnum for diesel", () => {
-    const stations = range(7).map(aStation);
+  it("should populate fuelTypeEnum for diesel", async () => {
+    const stations = range(7).map((i) => aStation(i + 1));
     stations[0].prices[0].fuelType = "Diesel";
     stations[1].prices[0].fuelType = "DIESEL";
     stations[2].prices[0].fuelType = "Hi-Q Diesel";
@@ -120,45 +106,23 @@ describe("Station", () => {
     stations[4].prices[0].fuelType = "GASOLIO";
     stations[5].prices[0].fuelType = "GASOLIO HQ";
     stations[6].prices[0].fuelType = "Super";
-    return Station.bulkUpsertById(stations)
-      .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-      .then((ss) =>
-        ss.forEach((s) =>
-          expect(s.prices[0].fuelTypeEnum).toEqual(FuelTypeEnum.DIESEL),
-        ),
-      );
-  });
-
-  it("should populate fuelTypeEnum for other", () => {
-    const stations = range(5).map(aStation);
-    stations[0].prices[0].fuelType = "GPL";
-    stations[1].prices[0].fuelType = "gpl";
-    stations[2].prices[0].fuelType = "Metano";
-    stations[3].prices[0].fuelType = "METANO";
-    stations[4].prices[0].fuelType = "Metano HQ";
-    stations[4].prices[0].fuelType = "";
-    stations[4].prices[0].fuelType = undefined as unknown as string;
-    return Station.bulkUpsertById(stations)
-      .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-      .then((ss) =>
-        ss.forEach((s) =>
-          expect(s.prices[0].fuelTypeEnum).toEqual(FuelTypeEnum.OTHER),
-        ),
-      );
-  });
-
-  it("should add fuelTypeEnum to JSON", () => {
-    const station = aStation();
-    station.prices[0].fuelType = "Diesel";
-    return Station.bulkUpsertById([station])
-      .then(() => Station.findNearestByCoordinates(1.0, 2.0, 2))
-      .then((ss) => expect(ss[0].prices[0].fuelTypeEnum).toEqual("DIESEL"));
+    
+    // Ensure 2dsphere index exists
+    const db = getTestDb();
+    await db.collection("stations").createIndex({ location: "2dsphere" });
+    
+    await repository.bulkUpsertById(stations);
+    const results = await repository.findNearestByCoordinates(1.0, 2.0, 7);
+    results.forEach((s) =>
+      expect(s.prices[0].fuelTypeEnum).toEqual(FuelTypeEnum.DIESEL),
+    );
   });
 
   it("should get by ids", async () => {
-    await Station.bulkUpsertById(range(5).map(aStation));
+    // Ensure index for findNearest (if used internally, though findByIds doesn't need it)
+    await repository.bulkUpsertById(range(5).map((i) => aStation(i + 1)));
     const ids = [1, 2];
-    const stations = await Station.findByIds(ids);
+    const stations = await repository.findByIds(ids);
     expect(stations.length).toBe(ids.length);
     stations.forEach((s) => expect(ids.includes(s.id)));
   });

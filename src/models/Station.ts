@@ -1,15 +1,15 @@
-import type { Polygon } from "geojson";
-import moment from "moment";
-import type { BulkWriteResult } from "mongodb";
-import { Document, model, Model, Schema } from "mongoose";
+import { z } from "zod";
 
 export enum GeoType {
   Point = "Point",
 }
-export type GeoJSON = {
-  type: GeoType;
-  coordinates: number[];
-};
+
+export const GeoJSONSchema = z.object({
+  type: z.enum(GeoType),
+  coordinates: z.array(z.number()),
+});
+
+export type GeoJSON = z.infer<typeof GeoJSONSchema>;
 
 export enum FuelTypeEnum {
   GASOLINE = "GASOLINE",
@@ -17,55 +17,60 @@ export enum FuelTypeEnum {
   OTHER = "OTHER",
 }
 
-export type Price = {
-  fuelType: string;
-  fuelTypeEnum?: FuelTypeEnum;
-  price: number;
-  isSelf: boolean;
-  updatedAt: Date;
-};
+export const DbPriceSchema = z.object({
+  fuelType: z.string(),
+  price: z.number(),
+  isSelf: z.boolean(),
+  updatedAt: z.coerce.date(),
+});
 
-export type IStation = {
-  id: number;
-  manager: string;
-  brand: string;
-  type: string;
-  name: string;
-  address: string;
-  city: string;
-  province: string;
-  location: GeoJSON;
-  prices: Price[];
-};
+export type DbPrice = z.infer<typeof DbPriceSchema>;
 
-export type IStationDocument = Document & IStation;
+export const PriceSchema = DbPriceSchema.extend({
+  fuelTypeEnum: z.enum(FuelTypeEnum).optional(),
+});
 
-export type IStationModel = Model<IStation> & {
-  bulkUpsertById(stations: IStation[]): Promise<BulkWriteResult>;
-  findNearestByCoordinates(
-    lat: number,
-    lng: number,
-    limit?: number,
-  ): Promise<IStation[]>;
-  findWithinPolygon(geom: Polygon, limit?: number): Promise<IStation[]>;
-  findByIds(ids: number[]): Promise<IStation[]>;
-};
+export type Price = z.infer<typeof PriceSchema>;
 
-const priceSchema = new Schema(
-  {
-    fuelType: { type: String, required: true },
-    price: { type: Number, required: true },
-    isSelf: { type: Boolean, required: true },
-    updatedAt: { type: Date, required: true },
-  },
-  { toJSON: { virtuals: true }, toObject: { virtuals: true } },
-);
+export const DbStationSchema = z.object({
+  id: z.number(),
+  manager: z.string().optional(),
+  brand: z.string().optional(),
+  type: z.string().optional(),
+  name: z.string(),
+  address: z.string(),
+  city: z.string(),
+  province: z.string(),
+  location: GeoJSONSchema,
+  prices: z.array(DbPriceSchema),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
 
-priceSchema.virtual("fuelTypeEnum").get(function () {
-  if (!this.fuelType) {
+export type DbStation = z.infer<typeof DbStationSchema>;
+
+export const StationSchema = DbStationSchema.extend({
+  prices: z.array(PriceSchema),
+});
+
+export type Station = z.infer<typeof StationSchema>;
+
+// Mapper function for computed properties
+export function toStation(dbStation: DbStation): Station {
+  return {
+    ...dbStation,
+    prices: dbStation.prices.map((p) => ({
+      ...p,
+      fuelTypeEnum: getFuelTypeEnum(p.fuelType),
+    })),
+  };
+}
+
+function getFuelTypeEnum(fuelType: string): FuelTypeEnum {
+  if (!fuelType) {
     return FuelTypeEnum.OTHER;
   }
-  const fuelTypeLower: string = this.fuelType.toLowerCase();
+  const fuelTypeLower = fuelType.toLowerCase();
   if (fuelTypeLower.includes("enzin")) {
     return FuelTypeEnum.GASOLINE;
   }
@@ -73,98 +78,4 @@ priceSchema.virtual("fuelTypeEnum").get(function () {
     return FuelTypeEnum.DIESEL;
   }
   return FuelTypeEnum.OTHER;
-});
-
-function filterByPriceUpdatedAt(updatedAt: Date) {
-  return { "prices.updatedAt": { $gte: updatedAt } };
 }
-
-const stationSchema = new Schema<IStation, IStationModel>(
-  {
-    id: {
-      type: Number,
-      required: true,
-      index: true,
-      unique: true,
-    },
-    manager: String,
-    brand: String,
-    type: String,
-    name: { type: String, required: true },
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    province: { type: String, required: true },
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        required: true,
-      },
-      coordinates: [Number],
-    },
-    prices: [priceSchema],
-  },
-  {
-    timestamps: true,
-    statics: {
-      bulkUpsertById(stations: IStation[]) {
-        const stationUpdates = stations
-          .filter((s) => {
-            const hasValidCoords =
-              isFinite(s.location.coordinates[0]) &&
-              isFinite(s.location.coordinates[1]);
-            if (!hasValidCoords) {
-              console.log(`Invalid coords: ${JSON.stringify(s)}`);
-            }
-            return hasValidCoords;
-          })
-          .map((station) => ({
-            updateOne: {
-              filter: { id: station.id },
-              update: { $set: station },
-              upsert: true,
-            },
-          }));
-        return this.collection.bulkWrite(stationUpdates);
-      },
-
-      findNearestByCoordinates(
-        lat: number,
-        lng: number,
-        limit: number = 100,
-      ): Promise<IStation[]> {
-        return this.find({
-          location: {
-            $near: { $geometry: { type: "Point", coordinates: [lng, lat] } },
-          },
-          ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
-        })
-          .limit(limit)
-          .exec();
-      },
-
-      findWithinPolygon(
-        geom: Polygon,
-        limit: number = 300,
-      ): Promise<IStation[]> {
-        return this.find({
-          location: { $geoWithin: { $geometry: geom } },
-          ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
-        })
-          .limit(limit)
-          .exec();
-      },
-
-      findByIds(ids: number[]): Promise<IStation[]> {
-        return this.find({
-          id: { $in: ids },
-          ...filterByPriceUpdatedAt(moment().add(-1, "months").toDate()),
-        }).exec();
-      },
-    },
-  },
-);
-
-stationSchema.index({ location: "2dsphere" });
-
-export const Station = model<IStation, IStationModel>("Station", stationSchema);

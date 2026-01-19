@@ -1,11 +1,12 @@
 import { injectable, inject } from "inversify";
+import { StationRepository } from "../repositories/StationRepository.js";
+import type { IStationRepository } from "../repositories/StationRepository.js";
+import type { Station } from "../models/Station.js";
 import { GoogleMapsClient } from "../clients/GoogleMapsClient.js";
-import type { IStation } from "../models/Station.js";
 import { StationConverter } from "../parsers/stationConverter.js";
 import { TYPES } from "../di/types.js";
 import type ILatLng from "../models/ILatLng.js";
 import GeoUtil from "../util/geo.js";
-import type { IStationModelProvider } from "../models/StationModelProvider.js";
 import { PriceDownloader } from "../fetchers/priceDownloader.js";
 import { StationDownloader } from "../fetchers/stationDownloader.js";
 
@@ -14,8 +15,8 @@ export class StationService {
   constructor(
     @inject(TYPES.GoogleMapsClient) private googleMapsClient: GoogleMapsClient,
     @inject(TYPES.GeoUtil) private geoUtil: GeoUtil,
-    @inject(TYPES.StationModelProvider)
-    private stationModel: IStationModelProvider,
+    @inject(TYPES.StationRepository)
+    private stationRepository: IStationRepository,
     @inject(TYPES.PriceDownloader) private priceDownloader: PriceDownloader,
     @inject(TYPES.StationDownloader)
     private stationDownloader: StationDownloader,
@@ -32,26 +33,26 @@ export class StationService {
 
     return Promise.all([csvStationsPromise, csvPricesPromise]).then(
       ([csvStations, csvPrices]) => {
-        this.stationModel.bulkUpsertById(
+        this.stationRepository.bulkUpsertById(
           this.stationConverter.merge(csvStations, csvPrices),
         );
       },
     );
   }
 
-  findNearestByCoordinates(lat: number, lng: number): Promise<IStation[]> {
+  findNearestByCoordinates(lat: number, lng: number): Promise<Station[]> {
     console.log(lat, lng);
-    return this.stationModel.findNearestByCoordinates(lat, lng);
+    return this.stationRepository.findNearestByCoordinates(lat, lng);
   }
 
-  async findOnTheRoute(from: ILatLng, to: ILatLng): Promise<IStation[]> {
+  async findOnTheRoute(from: ILatLng, to: ILatLng): Promise<Station[]> {
     const polyline = await this.googleMapsClient.getPolylineByRoute(from, to);
-    return this.stationModel.findWithinPolygon(
+    return this.stationRepository.findWithinPolygon(
       this.geoUtil.fromPolylineToPolygon(polyline),
     );
   }
 
   findByIds(ids: number[]) {
-    return this.stationModel.findByIds(ids);
+    return this.stationRepository.findByIds(ids);
   }
 }

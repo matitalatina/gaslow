@@ -1,7 +1,6 @@
 import fs from "fs";
 import moment from "moment";
-import type { IStationDocument, Price } from "../../src/models/Station.js";
-import { Station } from "../../src/models/Station.js";
+import { type Station, type Price, GeoType } from "../../src/models/Station.js";
 import type { CsvPrice } from "../../src/parsers/models/csvPrice.js";
 import type { CsvStation } from "../../src/parsers/models/csvStation.js";
 
@@ -11,10 +10,11 @@ export function aPrice(): Price {
     price: 1.45,
     isSelf: true,
     updatedAt: new Date(),
+    fuelTypeEnum: undefined, // Or populate it if needed for specific tests
   };
 }
-export function aStation(i: number = 1): IStationDocument {
-  return new Station({
+export function aStation(i: number = 1): Station {
+  return {
     id: i,
     manager: `manager${i}`,
     brand: `brand${i}`,
@@ -24,11 +24,11 @@ export function aStation(i: number = 1): IStationDocument {
     city: `city${i}`,
     province: `province${i}`,
     location: {
-      type: "Point",
+      type: GeoType.Point,
       coordinates: [i * 2.0, i * 1.0],
     },
     prices: [aPrice()],
-  });
+  };
 }
 
 export function aCsvStation(i: number = 1): CsvStation {

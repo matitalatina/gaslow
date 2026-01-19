@@ -8,13 +8,13 @@ import GeoUtil from "../../src/util/geo.js";
 import { range } from "lodash-es";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { BulkWriteResult } from "mongodb";
-import type { IStationModelProvider } from "../../src/models/StationModelProvider.js";
+import type { IStationRepository } from "../../src/repositories/StationRepository.js";
 import { PriceDownloader } from "../../src/fetchers/priceDownloader.js";
 import { StationDownloader } from "../../src/fetchers/stationDownloader.js";
 
 const mockGoogleMapsClient = mock(GoogleMapsClient);
 const mockGeoUtil = mock(GeoUtil);
-const mockStationModelProvider = mock<IStationModelProvider>();
+const mockStationRepository = mock<IStationRepository>();
 const mockPriceDownloader = mock(PriceDownloader);
 const mockStationDownloader = mock(StationDownloader);
 const mockStationConverter = mock(StationConverter);
@@ -24,7 +24,7 @@ describe("StationService", () => {
   beforeEach(() => {
     reset(mockGoogleMapsClient);
     reset(mockGeoUtil);
-    reset(mockStationModelProvider);
+    reset(mockStationRepository);
     reset(mockPriceDownloader);
     reset(mockStationDownloader);
     reset(mockStationConverter);
@@ -32,7 +32,7 @@ describe("StationService", () => {
     service = new StationService(
       instance(mockGoogleMapsClient),
       instance(mockGeoUtil),
-      instance(mockStationModelProvider),
+      instance(mockStationRepository),
       instance(mockPriceDownloader),
       instance(mockStationDownloader),
       instance(mockStationConverter),
@@ -72,7 +72,7 @@ describe("StationService", () => {
     } as unknown as BulkWriteResult;
 
     when(
-      mockStationModelProvider.bulkUpsertById(deepEqual(mergedStations)),
+      mockStationRepository.bulkUpsertById(deepEqual(mergedStations)),
     ).thenResolve(bulkWriteResult);
 
     await service.updateStationCollection();
@@ -88,7 +88,7 @@ describe("StationService", () => {
 
     // Verify that bulkUpsertById was called with the correct arguments
     verify(
-      mockStationModelProvider.bulkUpsertById(deepEqual(mergedStations)),
+      mockStationRepository.bulkUpsertById(deepEqual(mergedStations)),
     ).once();
   });
 
@@ -97,7 +97,7 @@ describe("StationService", () => {
 
     // Mock the findNearestByCoordinates method to return the stations
     when(
-      mockStationModelProvider.findNearestByCoordinates(1.0, 2.0),
+      mockStationRepository.findNearestByCoordinates(1.0, 2.0),
     ).thenResolve(returnedStations);
 
     // Call the service method
@@ -105,7 +105,7 @@ describe("StationService", () => {
 
     // Verify the result and that the mock was called
     expect(result).toEqual(returnedStations);
-    verify(mockStationModelProvider.findNearestByCoordinates(1.0, 2.0)).once();
+    verify(mockStationRepository.findNearestByCoordinates(1.0, 2.0)).once();
   });
 
   it("should find by ids", async () => {
@@ -113,7 +113,7 @@ describe("StationService", () => {
     const ids = [1, 2];
 
     // Mock the findByIds method
-    when(mockStationModelProvider.findByIds(deepEqual(ids))).thenResolve(
+    when(mockStationRepository.findByIds(deepEqual(ids))).thenResolve(
       returnedStations,
     );
 
@@ -122,7 +122,7 @@ describe("StationService", () => {
 
     // Verify the result and that the mock was called
     expect(result).toEqual(returnedStations);
-    verify(mockStationModelProvider.findByIds(deepEqual(ids))).once();
+    verify(mockStationRepository.findByIds(deepEqual(ids))).once();
   });
 
   it("should find on the route", async () => {
@@ -155,7 +155,7 @@ describe("StationService", () => {
 
     // Mock the findWithinPolygon method
     when(
-      mockStationModelProvider.findWithinPolygon(deepEqual(featurePolygon)),
+      mockStationRepository.findWithinPolygon(deepEqual(featurePolygon)),
     ).thenResolve(returnedStations);
 
     // Call the service method
@@ -168,7 +168,7 @@ describe("StationService", () => {
     ).once();
     verify(mockGeoUtil.fromPolylineToPolygon(polyline)).once();
     verify(
-      mockStationModelProvider.findWithinPolygon(deepEqual(featurePolygon)),
+      mockStationRepository.findWithinPolygon(deepEqual(featurePolygon)),
     ).once();
   });
 });
