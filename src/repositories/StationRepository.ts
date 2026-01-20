@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import type { Collection, BulkWriteResult } from "mongodb";
+import type { Collection, BulkWriteResult, DeleteResult } from "mongodb";
 import type { DbStation, Station } from "../models/Station.js";
 import { toStation, DbStationSchema } from "../models/Station.js";
 import type { Polygon } from "geojson";
@@ -15,7 +15,7 @@ export interface IStationRepository {
   ): Promise<Station[]>;
   findWithinPolygon(geom: Polygon, limit?: number): Promise<Station[]>;
   findByIds(ids: number[]): Promise<Station[]>;
-  deleteMany(filter: object): Promise<any>;
+  deleteMany(filter: object): Promise<DeleteResult>;
   findOne(filter: object): Promise<Station | null>;
   find(filter: object, limit?: number): Promise<Station[]>;
 }
@@ -45,12 +45,12 @@ export class StationRepository implements IStationRepository {
       .map((station) => ({
         updateOne: {
           filter: { id: station.id },
-          update: { 
-            $set: { 
+          update: {
+            $set: {
               ...station,
-              updatedAt: new Date()
+              updatedAt: new Date(),
             },
-            $setOnInsert: { createdAt: new Date() }
+            $setOnInsert: { createdAt: new Date() },
           },
           upsert: true,
         },
@@ -73,7 +73,7 @@ export class StationRepository implements IStationRepository {
       .limit(limit)
       .toArray();
 
-    return results.map(doc => toStation(DbStationSchema.parse(doc)));
+    return results.map((doc) => toStation(DbStationSchema.parse(doc)));
   }
 
   async findWithinPolygon(
@@ -88,7 +88,7 @@ export class StationRepository implements IStationRepository {
       .limit(limit)
       .toArray();
 
-    return results.map(doc => toStation(DbStationSchema.parse(doc)));
+    return results.map((doc) => toStation(DbStationSchema.parse(doc)));
   }
 
   async findByIds(ids: number[]): Promise<Station[]> {
@@ -99,10 +99,10 @@ export class StationRepository implements IStationRepository {
       })
       .toArray();
 
-    return results.map(doc => toStation(DbStationSchema.parse(doc)));
+    return results.map((doc) => toStation(DbStationSchema.parse(doc)));
   }
 
-  async deleteMany(filter: object): Promise<any> {
+  async deleteMany(filter: object): Promise<DeleteResult> {
     return this.collection.deleteMany(filter);
   }
 
@@ -118,6 +118,6 @@ export class StationRepository implements IStationRepository {
       cursor = cursor.limit(limit);
     }
     const results = await cursor.toArray();
-    return results.map(doc => toStation(DbStationSchema.parse(doc)));
+    return results.map((doc) => toStation(DbStationSchema.parse(doc)));
   }
 }

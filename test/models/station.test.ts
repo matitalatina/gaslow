@@ -1,7 +1,6 @@
 import { range } from "lodash-es";
 import moment from "moment";
 import { FuelTypeEnum } from "../../src/models/Station.js";
-import type { Station } from "../../src/models/Station.js";
 import { aStation, aPrice } from "../utils/fixtures.js";
 import { StationRepository } from "../../src/repositories/StationRepository.js";
 import { connectMongoTest, closeMongoTest, getTestDb } from "../utils/mongo.js";
@@ -27,7 +26,7 @@ describe("StationRepository", () => {
     const station = aStation();
     await repository.bulkUpsertById([station]);
     const savedStation = await repository.findOne({ id: station.id });
-    
+
     if (!savedStation) {
       throw new Error("Saved station is null");
     }
@@ -106,11 +105,11 @@ describe("StationRepository", () => {
     stations[4].prices[0].fuelType = "GASOLIO";
     stations[5].prices[0].fuelType = "GASOLIO HQ";
     stations[6].prices[0].fuelType = "Super";
-    
+
     // Ensure 2dsphere index exists
     const db = getTestDb();
     await db.collection("stations").createIndex({ location: "2dsphere" });
-    
+
     await repository.bulkUpsertById(stations);
     const results = await repository.findNearestByCoordinates(1.0, 2.0, 7);
     results.forEach((s) =>

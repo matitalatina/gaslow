@@ -15,7 +15,6 @@ import { StationConverter } from "../parsers/stationConverter.js";
 import { DbConnector } from "../repositories/DbConnector.js";
 import { Collection, Db } from "mongodb";
 import type { DbStation } from "../models/Station.js";
-import { ZodValidationPipe } from "../pipes/ZodValidationPipe.js";
 import { ValidationErrorFilter } from "../filters/ValidationErrorFilter.js";
 
 const myContainer = new Container();

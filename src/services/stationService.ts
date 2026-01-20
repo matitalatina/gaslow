@@ -1,5 +1,4 @@
 import { injectable, inject } from "inversify";
-import { StationRepository } from "../repositories/StationRepository.js";
 import type { IStationRepository } from "../repositories/StationRepository.js";
 import type { Station } from "../models/Station.js";
 import { GoogleMapsClient } from "../clients/GoogleMapsClient.js";

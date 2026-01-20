@@ -37,7 +37,6 @@ async function getApp() {
 
   // Register the error handler middleware correctly
   // Error handlers need to be registered last with all 4 parameters
-   
   configuredApp.use(
     (err: Error, req: Request, res: Response, _next: NextFunction) => {
       console.error("Error:", err);

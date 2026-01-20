@@ -1,6 +1,5 @@
 import { BadRequestHttpResponse, CatchError } from "@inversifyjs/http-core";
 import type { ExpressErrorFilter } from "@inversifyjs/http-express";
-import type { Request, Response } from "express";
 import { ZodError } from "zod";
 
 @CatchError(Error)

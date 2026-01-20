@@ -6,7 +6,6 @@ import {
   Query,
   Request as RequestParam,
   Response as ResponseParam,
-  UseErrorFilter,
 } from "@inversifyjs/http-core";
 import { inject } from "inversify";
 import { TYPES } from "../di/types.js";
@@ -20,7 +19,6 @@ import {
   type RouteQuerySchema,
   type IdsQuerySchema,
 } from "../schemas/querySchemas.js";
-import { ValidationErrorFilter } from "../filters/ValidationErrorFilter.js";
 
 @Controller("/stations")
 export class StationsController {
