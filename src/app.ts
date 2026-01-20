@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { TYPES } from "./di/types.js";
 import { myContainer } from "./di/inversify.config.js";
 import type { DbConnector } from "./repositories/DbConnector.js";
+import { ValidationErrorFilter } from "./filters/ValidationErrorFilter.js";
 
 // Controllers (route handlers)
 import "./controllers/stationController.js";
@@ -31,18 +32,19 @@ async function getApp() {
   // Pass the configured app to the adapter
   // The adapter will attach routes to this app
   const builder = new InversifyExpressHttpAdapter(myContainer, {}, app);
+  builder.useGlobalFilters(ValidationErrorFilter);
   const configuredApp = await builder.build();
 
   // Register the error handler middleware correctly
   // Error handlers need to be registered last with all 4 parameters
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   configuredApp.use(
     (err: Error, req: Request, res: Response, _next: NextFunction) => {
       console.error("Error:", err);
       res.status(500).json({ error: err.message || "Internal Server Error" });
     },
   );
-  
+
   return configuredApp;
 }
 

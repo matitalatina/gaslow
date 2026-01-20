@@ -3,12 +3,24 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Request as RequestParam,
   Response as ResponseParam,
+  UseErrorFilter,
 } from "@inversifyjs/http-core";
 import { inject } from "inversify";
 import { TYPES } from "../di/types.js";
 import { StationService } from "../services/stationService.js";
+import { ZodValidationPipe } from "../pipes/ZodValidationPipe.js";
+import {
+  locationQuerySchema,
+  idsQuerySchema,
+  routeQuerySchema,
+  type LocationQuerySchema,
+  type RouteQuerySchema,
+  type IdsQuerySchema,
+} from "../schemas/querySchemas.js";
+import { ValidationErrorFilter } from "../filters/ValidationErrorFilter.js";
 
 @Controller("/stations")
 export class StationsController {
@@ -28,11 +40,12 @@ export class StationsController {
 
   @Get("/find/location")
   findNearestByCoordinates(
-    @RequestParam() req: Request,
+    @Query(new ZodValidationPipe(locationQuerySchema))
+    latLng: LocationQuerySchema,
     @ResponseParam() res: Response,
   ): Promise<void> {
     return this.stationService
-      .findNearestByCoordinates(+req.query.lat, +req.query.lng)
+      .findNearestByCoordinates(latLng.lat, latLng.lng)
       .then((stations) => {
         res.json({ items: stations });
       });
@@ -40,29 +53,23 @@ export class StationsController {
 
   @Get("/find")
   findByIds(
-    @RequestParam() req: Request,
+    @Query(new ZodValidationPipe(idsQuerySchema)) query: IdsQuerySchema,
     @ResponseParam() res: Response,
   ): Promise<void> {
-    const ids = (req.query.ids as string).split(",").map((i) => +i);
-    return this.stationService.findByIds(ids).then((stations) => {
+    return this.stationService.findByIds(query.ids).then((stations) => {
       res.json({ items: stations });
     });
   }
 
   @Get("/find/route")
   async findOnTheRoute(
-    @RequestParam() req: Request,
+    @Query(new ZodValidationPipe(routeQuerySchema))
+    query: RouteQuerySchema,
     @ResponseParam() res: Response,
   ) {
-    const [fromLat, fromLng] = (req.query.from as string)
-      .split(",")
-      .map((n: string) => parseFloat(n));
-    const [toLat, toLng] = (req.query.to as string)
-      .split(",")
-      .map((n: string) => parseFloat(n));
     const stations = await this.stationService.findOnTheRoute(
-      { lat: fromLat, lng: fromLng },
-      { lat: toLat, lng: toLng },
+      query.from,
+      query.to,
     );
     res.json({ items: stations });
   }
