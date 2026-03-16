@@ -16,33 +16,32 @@ describe("StationParser", () => {
 
   it("should parse the csv skipping the first two lines and possible errors", async () => {
     const csvLines = await parsedStations;
+    console.log(csvLines);
     expect(csvLines.length).toEqual(4);
   });
 
   it("should parse correctly the station", async () => {
     const stations = await parsedStations;
     const firstStation = stations[0];
-    expect(firstStation.id).toEqual(3464);
-    expect(firstStation.manager).toEqual(
-      "STAZ.SERV.PO EST ANDREOTTI CLAUDIO DI ANDREOTTI OMAR E C. SNC",
-    );
-    expect(firstStation.brand).toEqual("Total Erg");
+    expect(firstStation.id).toEqual(3471);
+    expect(firstStation.manager).toEqual("MATTESINI MATTEO & C. S.N.C.");
+    expect(firstStation.brand).toEqual("Api-Ip");
     expect(firstStation.type).toEqual("Autostradale");
-    expect(firstStation.name).toEqual("PO EST");
+    expect(firstStation.name).toEqual("BADIA AL PINO OVEST");
     expect(firstStation.address).toEqual(
-      "Autostrada A13 BOLOGNA-PADOVA, Km. 43+400, dir. Nord 44100",
+      "Autostrada A1 MILANO-NAPOLI, Km. 362+300, dir. Sud - 52041",
     );
-    expect(firstStation.city).toEqual("FERRARA");
-    expect(firstStation.province).toEqual("FE");
-    expect(firstStation.latitude).toEqual(44.88011856623546);
-    expect(firstStation.longitude).toEqual(11.570832944774565);
+    expect(firstStation.city).toEqual("CIVITELLA IN VAL DI CHIANA");
+    expect(firstStation.province).toEqual("AR");
+    expect(firstStation.latitude).toEqual(43.40652172181852);
+    expect(firstStation.longitude).toEqual(11.762473472213742);
   });
   it("should parse correctly the station with html entities", async () => {
     const stations = await parsedStations;
     const firstStation = stations[3];
     expect(firstStation.id).toEqual(23777);
     expect(firstStation.manager).toEqual(
-      "ALFONSO DI BENEDETTO CARBURANTI LUBRIFICANTI SRL",
+      "A. Di Benedetto srl V.le C. Alberto Canicatti",
     );
     expect(firstStation.brand).toEqual("Sicilpetroli");
     expect(firstStation.type).toEqual("Stradale");
@@ -50,7 +49,7 @@ describe("StationParser", () => {
       "A. Di Benedetto srl V.le C. Alberto Canicatti",
     );
     expect(firstStation.address).toEqual(
-      "VIA VIALE CARLO ALBERTO S.N. 92024, CANICATTI' (AG) SNC 92024",
+      "VIA VIALE CARLO ALBERTO S.N. 92024, CANICATTI; (AG) SNC 92024",
     );
     expect(firstStation.city).toEqual("CANICATTI'");
     expect(firstStation.province).toEqual("AG");

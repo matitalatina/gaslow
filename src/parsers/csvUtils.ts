@@ -10,7 +10,7 @@ export function parseCsvSkip2Lines(csv: string): Promise<Array<string[]>> {
 
     // Updated to use the newer API style for csv-parse 5.5.3
     const parser = parse(csvLines.join("\n"), {
-      delimiter: ";",
+      delimiter: "|",
       quote: false,
       skip_records_with_error: true,
     });
