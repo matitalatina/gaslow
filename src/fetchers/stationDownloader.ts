@@ -14,7 +14,7 @@ export class StationDownloader {
 
   async download(): Promise<CsvStation[]> {
     const stationsSource: string =
-      "https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
+      "https://www.mimit.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
     return this.stringDownloader
       .download(stationsSource)
       .then(this.stationParser.parse);

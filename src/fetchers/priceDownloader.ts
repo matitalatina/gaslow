@@ -14,7 +14,7 @@ export class PriceDownloader {
 
   async download(): Promise<CsvPrice[]> {
     const pricesSource: string =
-      "https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv";
+      "https://www.mimit.gov.it/images/exportCSV/prezzo_alle_8.csv";
 
     return this.stringDownloader
       .download(pricesSource)
