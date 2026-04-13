@@ -7,6 +7,6 @@ export type CsvStation = {
   address: string;
   city: string;
   province: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | undefined | null;
+  longitude: number | undefined | null;
 };

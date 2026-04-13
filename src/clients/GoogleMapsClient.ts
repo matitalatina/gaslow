@@ -5,7 +5,7 @@ import { GOOGLE_API_KEY } from "../util/secrets.js";
 
 @injectable()
 export class GoogleMapsClient {
-  async getPolylineByRoute(from: ILatLng, to: ILatLng): Promise<string> {
+  async getPolylineByRoute(from: ILatLng, to: ILatLng): Promise<string | undefined> {
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/directions/json?origin=${from.lat},${from.lng}&destination=${to.lat},${to.lng}&key=${GOOGLE_API_KEY}`,
     );

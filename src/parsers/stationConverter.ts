@@ -1,6 +1,6 @@
 import { keyBy } from "lodash-es";
 import { GeoType } from "../models/Station.js";
-import type { Station, Price } from "../models/Station.js";
+import type { Station } from "../models/Station.js";
 import type { CsvPrice } from "./models/csvPrice.js";
 import type { CsvStation } from "./models/csvStation.js";
 import { injectable } from "inversify";
@@ -8,28 +8,33 @@ import { injectable } from "inversify";
 @injectable()
 export class StationConverter {
   merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): Station[] {
-    const stations: Station[] = csvStations.map((s) => {
-      const station = {
-        prices: [] as Price[],
+    const stations: Station[] = [];
+
+    for (const s of csvStations) {
+      const { latitude, longitude, ...rest } = s;
+      if (!latitude || !longitude) {
+        continue;
+      }
+
+      stations.push({
+        ...rest,
+        prices: [],
         location: {
           type: GeoType.Point,
-          coordinates: [s.longitude, s.latitude],
+          coordinates: [longitude, latitude],
         },
-        ...s,
-      };
-      delete station.latitude;
-      delete station.longitude;
-      return station;
-    });
+      });
+    }
+
     const stationsById = keyBy(stations, "id");
     csvPrices.forEach((p) => {
       const s = stationsById[p.idStation];
       if (s) {
-        s.prices.push(p);
+        const { idStation, ...priceData } = p;
+        s.prices.push(priceData);
       } else {
         console.log(`${p.idStation} not found in station`);
       }
-      delete p.idStation;
     });
     return stations;
   }

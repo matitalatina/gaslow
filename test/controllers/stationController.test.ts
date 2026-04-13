@@ -18,6 +18,7 @@ import { ZodValidationPipe } from "../../src/pipes/ZodValidationPipe.js";
 import { ValidationErrorFilter } from "../../src/filters/ValidationErrorFilter.js";
 import { locationQuerySchema } from "../../src/schemas/querySchemas.js";
 import { ZodError } from "zod";
+import { BadRequestHttpResponse } from "@inversifyjs/http-core";
 
 const mockStationService = mock(StationService);
 
@@ -49,10 +50,12 @@ describe("StationController", () => {
     const res: any = {
       json,
     };
-    return controller.findNearestByCoordinates(1.0, 2.0, res).then(() => {
-      expect(json.mock.calls.length).toBe(1);
-      expect((json.mock.calls[0][0] as any).items[0].id).toBe(aStation().id);
-    });
+    return controller
+      .findNearestByCoordinates({ lat: 1.0, lng: 2.0 }, res)
+      .then(() => {
+        expect(json.mock.calls.length).toBe(1);
+        expect((json.mock.calls[0][0] as any).items[0].id).toBe(aStation().id);
+      });
   });
 
   it("should findNearestByRoute", () => {
@@ -65,7 +68,7 @@ describe("StationController", () => {
     const res: any = {
       json,
     };
-    return controller.findOnTheRoute(from, to, res).then(() => {
+    return controller.findOnTheRoute({ from, to }, res).then(() => {
       expect(json.mock.calls.length).toBe(1);
       expect((json.mock.calls[0][0] as any).items[0].id).toEqual(aStation().id);
     });
@@ -79,7 +82,7 @@ describe("StationController", () => {
       json,
     };
 
-    await controller.findByIds([1, 2], res);
+    await controller.findByIds({ ids: [1, 2] }, res);
 
     expect(json.mock.calls.length).toBe(1);
     expect((json.mock.calls[0][0] as any).items[0].id).toBe(stations[0].id);
@@ -104,13 +107,9 @@ describe("StationController", () => {
       const filter = new ValidationErrorFilter();
       const error = new ZodError([]);
       (error as any).errors = [];
-      const res: any = { status: vi.fn().mockReturnThis(), json: vi.fn() };
-      filter.catch(error, {} as any, res);
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Validation failed",
-        details: [],
-      });
+      expect(() => filter.catch(error)).toThrow(
+        BadRequestHttpResponse,
+      );
     });
   });
 });

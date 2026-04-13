@@ -14,10 +14,10 @@ export default class GeoUtil {
     );
     const buffered = buffer(line, 1, { units: "kilometers", steps: 8 });
 
-    if (!buffered) {
-      throw new Error("Failed to create buffer from polyline");
+    if (!buffered || buffered.geometry.type !== "Polygon") {
+      throw new Error("Failed to create polygon buffer from polyline");
     }
 
-    return buffered.geometry as Polygon;
+    return buffered.geometry;
   }
 }

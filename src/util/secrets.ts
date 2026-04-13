@@ -12,19 +12,22 @@ export const ENVIRONMENT = process.env.NODE_ENV;
 const prod = ENVIRONMENT === "production"; // Anything else is treated as 'dev'
 
 export const { SESSION_SECRET } = process.env;
-export const MONGODB_URI = prod
+export const { GOOGLE_API_KEY } = process.env;
+
+const uri = prod
   ? process.env.MONGODB_URI
   : process.env.MONGODB_URI_LOCAL;
-export const { GOOGLE_API_KEY } = process.env;
 
 if (!SESSION_SECRET) {
   console.error("No client secret. Set SESSION_SECRET environment variable.");
   process.exit(1);
 }
 
-if (!MONGODB_URI) {
+if (!uri) {
   console.error(
     "No mongo connection string. Set MONGODB_URI environment variable.",
   );
   process.exit(1);
 }
+
+export const MONGODB_URI = uri;

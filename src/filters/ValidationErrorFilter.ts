@@ -1,15 +1,14 @@
 import { BadRequestHttpResponse, CatchError } from "@inversifyjs/http-core";
-import type { ExpressErrorFilter } from "@inversifyjs/http-express";
+import { type ExpressErrorFilter } from "@inversifyjs/http-express";
 import { ZodError } from "zod";
 
 @CatchError(Error)
 export class ValidationErrorFilter implements ExpressErrorFilter {
   catch(error: Error): void {
-    if (error.name === "ZodError" || error instanceof ZodError) {
-      const zodError = error as ZodError;
+    if (error instanceof ZodError) {
       throw new BadRequestHttpResponse({
         message: "Validation failed",
-        details: zodError.issues,
+        details: error.issues,
       });
     }
     throw error;

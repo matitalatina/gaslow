@@ -46,6 +46,9 @@ export class StationService {
 
   async findOnTheRoute(from: ILatLng, to: ILatLng): Promise<Station[]> {
     const polyline = await this.googleMapsClient.getPolylineByRoute(from, to);
+    if (!polyline) {
+      return [];
+    }
     return this.stationRepository.findWithinPolygon(
       this.geoUtil.fromPolylineToPolygon(polyline),
     );
