@@ -38,7 +38,7 @@ async function getApp() {
   // Register the error handler middleware correctly
   // Error handlers need to be registered last with all 4 parameters
   configuredApp.use(
-    (err: Error, req: Request, res: Response, _next: NextFunction) => {
+    (err: Error, _req: Request, res: Response, _next: NextFunction) => {
       console.error("Error:", err);
       res.status(500).json({ error: err.message || "Internal Server Error" });
     },

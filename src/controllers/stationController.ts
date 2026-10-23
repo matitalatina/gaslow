@@ -28,7 +28,7 @@ export class StationsController {
 
   @Post("/update")
   updateStationCollection(
-    @RequestParam() req: Request,
+    @RequestParam() _req: Request,
     @ResponseParam() res: Response,
   ): Promise<void> {
     return this.stationService.updateStationCollection().then(() => {
