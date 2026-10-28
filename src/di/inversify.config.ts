@@ -8,7 +8,7 @@ import GeoUtil from "../util/geo.js";
 import { TYPES } from "./types.js";
 import { PriceDownloader } from "../fetchers/priceDownloader.js";
 import { StationDownloader } from "../fetchers/stationDownloader.js";
-import { StringDownloader } from "../fetchers/stringDownloader.js";
+import { CsvDownloader } from "../fetchers/csvDownloader.js";
 import { PriceParser } from "../parsers/priceParser.js";
 import { StationParser } from "../parsers/stationParser.js";
 import { StationConverter } from "../parsers/stationConverter.js";
@@ -49,7 +49,7 @@ myContainer.bind<PriceDownloader>(TYPES.PriceDownloader).to(PriceDownloader);
 myContainer
   .bind<StationDownloader>(TYPES.StationDownloader)
   .to(StationDownloader);
-myContainer.bind<StringDownloader>(TYPES.StringDownloader).to(StringDownloader);
+myContainer.bind<CsvDownloader>(TYPES.CsvDownloader).to(CsvDownloader);
 myContainer.bind<PriceParser>(TYPES.PriceParser).to(PriceParser);
 myContainer.bind<StationParser>(TYPES.StationParser).to(StationParser);
 myContainer.bind<StationConverter>(TYPES.StationConverter).to(StationConverter);

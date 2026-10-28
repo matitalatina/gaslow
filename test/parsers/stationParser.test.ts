@@ -1,6 +1,7 @@
 import type { CsvStation } from "../../src/parsers/models/csvStation.js";
 import { StationParser } from "../../src/parsers/stationParser.js";
 import { getFileAsString } from "../utils/files.js";
+import { Readable } from "node:stream";
 import { describe, it, expect, beforeEach } from "vitest";
 
 describe("StationParser", () => {
@@ -36,6 +37,21 @@ describe("StationParser", () => {
     expect(firstStation.latitude).toEqual(43.40652172181852);
     expect(firstStation.longitude).toEqual(11.762473472213742);
   });
+  it("should parse a station CSV stream", async () => {
+    const csvString = await getFileAsString(
+      "test/resources/anagrafica_impianti_attivi.csv",
+    );
+    const chunks = Array.from(
+      { length: Math.ceil(csvString.length / 64) },
+      (_, index) => csvString.slice(index * 64, (index + 1) * 64),
+    );
+
+    const stations = await stationParser.parse(Readable.from(chunks));
+
+    expect(stations.length).toEqual(4);
+    expect(stations[0].id).toEqual(3471);
+  });
+
   it("should parse correctly the station with html entities", async () => {
     const stations = await parsedStations;
     const firstStation = stations[3];

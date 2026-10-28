@@ -1,4 +1,5 @@
 import { injectable, inject } from "inversify";
+import type { Readable } from "node:stream";
 import type { IStationRepository } from "../repositories/StationRepository.js";
 import type { Station } from "../models/Station.js";
 import { GoogleMapsClient } from "../clients/GoogleMapsClient.js";
@@ -10,6 +11,9 @@ import { PriceDownloader } from "../fetchers/priceDownloader.js";
 import { StationDownloader } from "../fetchers/stationDownloader.js";
 import { StationParser } from "../parsers/stationParser.js";
 import { PriceParser } from "../parsers/priceParser.js";
+import { UpdateMemoryLimitError } from "../errors.js";
+
+const MAX_UPDATE_HEAP_BYTES = 350 * 1024 * 1024;
 
 @injectable()
 export class StationService {
@@ -29,9 +33,6 @@ export class StationService {
     @inject(TYPES.PriceParser) private priceParser: PriceParser,
   ) {}
 
-  static stationsSource: string =
-    "https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
-
   updateStationCollection(): Promise<void> {
     if (this.updateInFlight) {
       return this.updateInFlight;
@@ -45,21 +46,64 @@ export class StationService {
   }
 
   private async performUpdate(): Promise<void> {
-    const [csvStations, csvPrices] = await Promise.all([
-      this.stationDownloader.download(),
-      this.priceDownloader.download(),
-    ]);
+    const startedAt = Date.now();
+    const controller = new AbortController();
+    let stationStream: Readable | undefined;
+    let priceStream: Readable | undefined;
 
-    const stations = await this.stationConverter.merge(
-      this.stationParser.parseStream(csvStations),
-      this.priceParser.parseStream(csvPrices),
+    this.logMemory("update started");
+
+    try {
+      [stationStream, priceStream] = await Promise.all([
+        this.stationDownloader.download(controller.signal),
+        this.priceDownloader.download(controller.signal),
+      ]);
+      this.logMemory("download finished");
+      this.assertHeapBelowGuard("download finished");
+
+      const stations = await this.stationConverter.merge(
+        this.stationParser.parseStream(stationStream),
+        this.priceParser.parseStream(priceStream),
+      );
+      this.logMemory(`merge finished (${stations.length} stations)`);
+      this.assertHeapBelowGuard("merge finished");
+
+      await this.stationRepository.bulkUpsertById(stations);
+      console.log(`[stations] update finished in ${Date.now() - startedAt}ms`);
+    } catch (error) {
+      controller.abort();
+      console.error(
+        `[stations] update failed after ${Date.now() - startedAt}ms`,
+        error,
+      );
+      throw error;
+    } finally {
+      stationStream?.destroy();
+      priceStream?.destroy();
+    }
+  }
+
+  private assertHeapBelowGuard(stage: string): void {
+    const { heapUsed } = process.memoryUsage();
+    if (heapUsed > MAX_UPDATE_HEAP_BYTES) {
+      throw new UpdateMemoryLimitError(
+        `Heap usage ${Math.round(heapUsed / 1048576)}MB exceeded the ${Math.round(
+          MAX_UPDATE_HEAP_BYTES / 1048576,
+        )}MB guard at ${stage}`,
+      );
+    }
+  }
+
+  private logMemory(stage: string): void {
+    const { heapUsed, rss } = process.memoryUsage();
+    console.log(
+      `[stations] ${stage} heap=${Math.round(heapUsed / 1048576)}MB rss=${Math.round(
+        rss / 1048576,
+      )}MB`,
     );
-
-    await this.stationRepository.bulkUpsertById(stations);
   }
 
   findNearestByCoordinates(lat: number, lng: number): Promise<Station[]> {
-    console.log(lat, lng);
     return this.stationRepository.findNearestByCoordinates(lat, lng);
   }
 

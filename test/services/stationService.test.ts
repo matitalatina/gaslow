@@ -20,6 +20,8 @@ import { PriceDownloader } from "../../src/fetchers/priceDownloader.js";
 import { StationDownloader } from "../../src/fetchers/stationDownloader.js";
 import { StationParser } from "../../src/parsers/stationParser.js";
 import { PriceParser } from "../../src/parsers/priceParser.js";
+import { DownloadError } from "../../src/errors.js";
+import { Readable } from "node:stream";
 
 const mockGoogleMapsClient = mock(GoogleMapsClient);
 const mockGeoUtil = mock(GeoUtil);
@@ -75,8 +77,12 @@ describe("StationService", () => {
     const mergedStations = [aStation()];
 
     // Mock the downloader methods
-    when(mockStationDownloader.download()).thenResolve(stationCsv);
-    when(mockPriceDownloader.download()).thenResolve(priceCsv);
+    when(mockStationDownloader.download(anything())).thenResolve(
+      Readable.from([stationCsv]),
+    );
+    when(mockPriceDownloader.download(anything())).thenResolve(
+      Readable.from([priceCsv]),
+    );
 
     // Mock the StationConverter.merge method
     when(mockStationConverter.merge(anything(), anything())).thenResolve(
@@ -90,8 +96,8 @@ describe("StationService", () => {
     await service.updateStationCollection();
 
     // Verify that the downloader methods were called
-    verify(mockStationDownloader.download()).once();
-    verify(mockPriceDownloader.download()).once();
+    verify(mockStationDownloader.download(anything())).once();
+    verify(mockPriceDownloader.download(anything())).once();
 
     // Verify that the StationConverter.merge method was called
     verify(mockStationConverter.merge(anything(), anything())).once();
@@ -102,11 +108,49 @@ describe("StationService", () => {
     ).once();
   });
 
+  it("should propagate download errors", async () => {
+    when(mockStationDownloader.download(anything())).thenReject(
+      new DownloadError("source is offline"),
+    );
+
+    await expect(service.updateStationCollection()).rejects.toThrow(
+      DownloadError,
+    );
+  });
+
+  it("should abort before merging when heap usage is above the guard", async () => {
+    const memorySpy = vi.spyOn(process, "memoryUsage").mockReturnValue({
+      rss: 500 * 1024 * 1024,
+      heapTotal: 450 * 1024 * 1024,
+      heapUsed: 400 * 1024 * 1024,
+      external: 0,
+      arrayBuffers: 0,
+    });
+
+    when(mockStationDownloader.download(anything())).thenResolve(
+      Readable.from([stationCsv]),
+    );
+    when(mockPriceDownloader.download(anything())).thenResolve(
+      Readable.from([priceCsv]),
+    );
+
+    await expect(service.updateStationCollection()).rejects.toThrow(
+      /exceeded the 350MB guard/,
+    );
+
+    verify(mockStationConverter.merge(anything(), anything())).never();
+    memorySpy.mockRestore();
+  });
+
   it("should run only one update at a time", async () => {
     const mergedStations = [aStation()];
 
-    when(mockStationDownloader.download()).thenResolve(stationCsv);
-    when(mockPriceDownloader.download()).thenResolve(priceCsv);
+    when(mockStationDownloader.download(anything())).thenResolve(
+      Readable.from([stationCsv]),
+    );
+    when(mockPriceDownloader.download(anything())).thenResolve(
+      Readable.from([priceCsv]),
+    );
     when(mockStationConverter.merge(anything(), anything())).thenResolve(
       mergedStations,
     );
@@ -119,8 +163,8 @@ describe("StationService", () => {
       service.updateStationCollection(),
     ]);
 
-    verify(mockStationDownloader.download()).once();
-    verify(mockPriceDownloader.download()).once();
+    verify(mockStationDownloader.download(anything())).once();
+    verify(mockPriceDownloader.download(anything())).once();
     verify(mockStationConverter.merge(anything(), anything())).once();
     verify(
       mockStationRepository.bulkUpsertById(deepEqual(mergedStations)),
@@ -134,8 +178,12 @@ describe("StationService", () => {
       finishWrite = resolve;
     });
 
-    when(mockStationDownloader.download()).thenResolve(stationCsv);
-    when(mockPriceDownloader.download()).thenResolve(priceCsv);
+    when(mockStationDownloader.download(anything())).thenResolve(
+      Readable.from([stationCsv]),
+    );
+    when(mockPriceDownloader.download(anything())).thenResolve(
+      Readable.from([priceCsv]),
+    );
     when(mockStationConverter.merge(anything(), anything())).thenResolve(
       mergedStations,
     );
@@ -161,9 +209,9 @@ describe("StationService", () => {
     const returnedStations = [aStation()];
 
     // Mock the findNearestByCoordinates method to return the stations
-    when(
-      mockStationRepository.findNearestByCoordinates(1.0, 2.0),
-    ).thenResolve(returnedStations);
+    when(mockStationRepository.findNearestByCoordinates(1.0, 2.0)).thenResolve(
+      returnedStations,
+    );
 
     // Call the service method
     const result = await service.findNearestByCoordinates(1.0, 2.0);

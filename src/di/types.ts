@@ -7,7 +7,7 @@ const TYPES = {
   Db: Symbol.for("Db"),
   PriceDownloader: Symbol.for("PriceDownloader"),
   StationDownloader: Symbol.for("StationDownloader"),
-  StringDownloader: Symbol.for("StringDownloader"),
+  CsvDownloader: Symbol.for("CsvDownloader"),
   PriceParser: Symbol.for("PriceParser"),
   StationParser: Symbol.for("StationParser"),
   StationConverter: Symbol.for("StationConverter"),

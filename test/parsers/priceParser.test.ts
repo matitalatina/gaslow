@@ -1,6 +1,7 @@
 import moment from "moment";
 import { PriceParser } from "../../src/parsers/priceParser.js";
 import { getFileAsString } from "../utils/files.js";
+import { Readable } from "node:stream";
 import { describe, it, expect, beforeEach } from "vitest";
 
 describe("PriceParser", () => {
@@ -14,6 +15,19 @@ describe("PriceParser", () => {
     const csvString = await getFileAsString("test/resources/prezzo_alle_8.csv");
     const csvData = await priceParser.parse(csvString);
     expect(csvData.length).toEqual(6);
+  });
+
+  it("should parse a price CSV stream", async () => {
+    const csvString = await getFileAsString("test/resources/prezzo_alle_8.csv");
+    const chunks = Array.from(
+      { length: Math.ceil(csvString.length / 32) },
+      (_, index) => csvString.slice(index * 32, (index + 1) * 32),
+    );
+
+    const prices = await priceParser.parse(Readable.from(chunks));
+
+    expect(prices.length).toEqual(6);
+    expect(prices[0].idStation).toEqual(3471);
   });
 
   it("should convert correctly a price", async () => {

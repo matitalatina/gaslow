@@ -10,6 +10,7 @@ import {
 import { inject } from "inversify";
 import { TYPES } from "../di/types.js";
 import { StationService } from "../services/stationService.js";
+import { DownloadError, UpdateMemoryLimitError } from "../errors.js";
 import { ZodValidationPipe } from "../pipes/ZodValidationPipe.js";
 import {
   locationQuerySchema,
@@ -27,13 +28,23 @@ export class StationsController {
   ) {}
 
   @Post("/update")
-  updateStationCollection(
+  async updateStationCollection(
     @RequestParam() _req: Request,
     @ResponseParam() res: Response,
   ): Promise<void> {
-    return this.stationService.updateStationCollection().then(() => {
+    try {
+      await this.stationService.updateStationCollection();
       res.json({ message: "Finished!" });
-    });
+    } catch (error) {
+      if (
+        error instanceof DownloadError ||
+        error instanceof UpdateMemoryLimitError
+      ) {
+        res.status(503).json({ error: error.message });
+        return;
+      }
+      throw error;
+    }
   }
 
   @Get("/find/location")

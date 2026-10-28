@@ -19,6 +19,7 @@ import { ValidationErrorFilter } from "../../src/filters/ValidationErrorFilter.j
 import { locationQuerySchema } from "../../src/schemas/querySchemas.js";
 import { ZodError } from "zod";
 import { BadRequestHttpResponse } from "@inversifyjs/http-core";
+import { DownloadError } from "../../src/errors.js";
 
 const mockStationService = mock(StationService);
 
@@ -40,6 +41,20 @@ describe("StationController", () => {
       expect(json.mock.calls.length).toBe(1);
       verify(mockStationService.updateStationCollection()).called();
     });
+  });
+
+  it("should return 503 when the source cannot be downloaded", async () => {
+    when(mockStationService.updateStationCollection()).thenReject(
+      new DownloadError("source is offline"),
+    );
+    const json = vi.fn();
+    const status = vi.fn().mockReturnValue({ json });
+    const res: any = { json, status };
+
+    await controller.updateStationCollection({} as any, res);
+
+    expect(status).toHaveBeenCalledWith(503);
+    expect(json).toHaveBeenCalledWith({ error: "source is offline" });
   });
 
   it("should findNearestByCoordinates", () => {
@@ -107,9 +122,7 @@ describe("StationController", () => {
       const filter = new ValidationErrorFilter();
       const error = new ZodError([]);
       (error as any).errors = [];
-      expect(() => filter.catch(error)).toThrow(
-        BadRequestHttpResponse,
-      );
+      expect(() => filter.catch(error)).toThrow(BadRequestHttpResponse);
     });
   });
 });
