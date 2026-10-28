@@ -4,7 +4,16 @@ import { FuelTypeEnum } from "../../src/models/Station.js";
 import { aStation, aPrice } from "../utils/fixtures.js";
 import { StationRepository } from "../../src/repositories/StationRepository.js";
 import { connectMongoTest, closeMongoTest, getTestDb } from "../utils/mongo.js";
-import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
+import { Collection } from "mongodb";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  beforeAll,
+  afterAll,
+  vi,
+} from "vitest";
 
 describe("StationRepository", () => {
   let repository: StationRepository;
@@ -39,6 +48,23 @@ describe("StationRepository", () => {
     await repository.bulkUpsertById(stations);
     const savedStations = await repository.find({});
     expect(savedStations.length).toEqual(4);
+  });
+
+  it("should split large updates into batches", async () => {
+    const stations = range(10001).map((i) => {
+      const station = aStation(i + 1);
+      station.location.coordinates = [i % 180, i % 90];
+      return station;
+    });
+    const bulkWriteSpy = vi.spyOn(Collection.prototype, "bulkWrite");
+
+    await repository.bulkUpsertById(stations);
+
+    expect(bulkWriteSpy).toHaveBeenCalledTimes(3);
+    const savedStations = await repository.find({});
+    expect(savedStations.length).toEqual(10001);
+
+    bulkWriteSpy.mockRestore();
   });
 
   describe("findNearestByCoordinates", () => {

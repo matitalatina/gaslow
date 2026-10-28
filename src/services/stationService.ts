@@ -8,9 +8,13 @@ import type ILatLng from "../models/ILatLng.js";
 import GeoUtil from "../util/geo.js";
 import { PriceDownloader } from "../fetchers/priceDownloader.js";
 import { StationDownloader } from "../fetchers/stationDownloader.js";
+import { StationParser } from "../parsers/stationParser.js";
+import { PriceParser } from "../parsers/priceParser.js";
 
 @injectable()
 export class StationService {
+  private updateInFlight: Promise<void> | null = null;
+
   constructor(
     @inject(TYPES.GoogleMapsClient) private googleMapsClient: GoogleMapsClient,
     @inject(TYPES.GeoUtil) private geoUtil: GeoUtil,
@@ -21,22 +25,37 @@ export class StationService {
     private stationDownloader: StationDownloader,
     @inject(TYPES.StationConverter)
     private stationConverter: StationConverter,
+    @inject(TYPES.StationParser) private stationParser: StationParser,
+    @inject(TYPES.PriceParser) private priceParser: PriceParser,
   ) {}
 
   static stationsSource: string =
     "https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
 
   updateStationCollection(): Promise<void> {
-    const csvStationsPromise = this.stationDownloader.download();
-    const csvPricesPromise = this.priceDownloader.download();
+    if (this.updateInFlight) {
+      return this.updateInFlight;
+    }
 
-    return Promise.all([csvStationsPromise, csvPricesPromise]).then(
-      ([csvStations, csvPrices]) => {
-        this.stationRepository.bulkUpsertById(
-          this.stationConverter.merge(csvStations, csvPrices),
-        );
-      },
+    this.updateInFlight = this.performUpdate().finally(() => {
+      this.updateInFlight = null;
+    });
+
+    return this.updateInFlight;
+  }
+
+  private async performUpdate(): Promise<void> {
+    const [csvStations, csvPrices] = await Promise.all([
+      this.stationDownloader.download(),
+      this.priceDownloader.download(),
+    ]);
+
+    const stations = await this.stationConverter.merge(
+      this.stationParser.parseStream(csvStations),
+      this.priceParser.parseStream(csvPrices),
     );
+
+    await this.stationRepository.bulkUpsertById(stations);
   }
 
   findNearestByCoordinates(lat: number, lng: number): Promise<Station[]> {

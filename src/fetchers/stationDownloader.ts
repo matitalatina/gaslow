@@ -1,5 +1,3 @@
-import type { CsvStation } from "../parsers/models/csvStation.js";
-import { StationParser } from "../parsers/stationParser.js";
 import { StringDownloader } from "./stringDownloader.js";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../di/types.js";
@@ -9,14 +7,11 @@ export class StationDownloader {
   constructor(
     @inject(TYPES.StringDownloader)
     private readonly stringDownloader: StringDownloader,
-    @inject(TYPES.StationParser) private readonly stationParser: StationParser,
   ) {}
 
-  async download(): Promise<CsvStation[]> {
+  async download(): Promise<string> {
     const stationsSource: string =
       "https://www.mimit.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
-    return this.stringDownloader
-      .download(stationsSource)
-      .then(this.stationParser.parse);
+    return this.stringDownloader.download(stationsSource);
   }
 }

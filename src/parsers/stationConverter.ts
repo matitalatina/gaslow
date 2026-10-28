@@ -1,4 +1,3 @@
-import { keyBy } from "lodash-es";
 import { GeoType } from "../models/Station.js";
 import type { Station } from "../models/Station.js";
 import type { CsvPrice } from "./models/csvPrice.js";
@@ -7,16 +6,19 @@ import { injectable } from "inversify";
 
 @injectable()
 export class StationConverter {
-  merge(csvStations: CsvStation[], csvPrices: CsvPrice[]): Station[] {
-    const stations: Station[] = [];
+  async merge(
+    csvStations: Iterable<CsvStation> | AsyncIterable<CsvStation>,
+    csvPrices: Iterable<CsvPrice> | AsyncIterable<CsvPrice>,
+  ): Promise<Station[]> {
+    const stationsById = new Map<number, Station>();
 
-    for (const s of csvStations) {
+    for await (const s of csvStations) {
       const { latitude, longitude, ...rest } = s;
       if (!latitude || !longitude) {
         continue;
       }
 
-      stations.push({
+      stationsById.set(s.id, {
         ...rest,
         prices: [],
         location: {
@@ -26,16 +28,16 @@ export class StationConverter {
       });
     }
 
-    const stationsById = keyBy(stations, "id");
-    csvPrices.forEach((p) => {
-      const s = stationsById[p.idStation];
-      if (s) {
+    for await (const p of csvPrices) {
+      const station = stationsById.get(p.idStation);
+      if (station) {
         const { idStation, ...priceData } = p;
-        s.prices.push(priceData);
+        station.prices.push(priceData);
       } else {
         console.log(`${p.idStation} not found in station`);
       }
-    });
-    return stations;
+    }
+
+    return Array.from(stationsById.values());
   }
 }

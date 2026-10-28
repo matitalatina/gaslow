@@ -1,19 +1,28 @@
 import moment from "moment";
+import { decode } from "html-entities";
 import type { CsvPrice } from "./models/csvPrice.js";
 import { parseCsvSkip2Lines } from "./csvUtils.js";
 import { injectable } from "inversify";
 
 @injectable()
 export class PriceParser {
-  parse(csv: string): Promise<Array<CsvPrice>> {
-    return parseCsvSkip2Lines(csv).then((csvList: Array<string[]>) =>
-      csvList.map((csvRow) => ({
-        idStation: parseInt(csvRow[0], 10),
-        fuelType: csvRow[1],
-        price: parseFloat(csvRow[2]),
-        isSelf: csvRow[3] === "1",
-        updatedAt: moment(csvRow[4], "DD/MM/YYYY HH:mm:ss").toDate(),
-      })),
-    );
+  async *parseStream(csv: string): AsyncGenerator<CsvPrice> {
+    for await (const row of parseCsvSkip2Lines(csv)) {
+      yield {
+        idStation: parseInt(row[0], 10),
+        fuelType: decode(row[1]),
+        price: parseFloat(row[2]),
+        isSelf: row[3] === "1",
+        updatedAt: moment(row[4], "DD/MM/YYYY HH:mm:ss").toDate(),
+      };
+    }
+  }
+
+  async parse(csv: string): Promise<Array<CsvPrice>> {
+    const prices: Array<CsvPrice> = [];
+    for await (const price of this.parseStream(csv)) {
+      prices.push(price);
+    }
+    return prices;
   }
 }

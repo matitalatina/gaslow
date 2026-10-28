@@ -19,7 +19,10 @@ import { ValidationErrorFilter } from "../filters/ValidationErrorFilter.js";
 
 const myContainer = new Container();
 myContainer.bind(StationsController).toSelf();
-myContainer.bind<StationService>(TYPES.StationService).to(StationService);
+myContainer
+  .bind<StationService>(TYPES.StationService)
+  .to(StationService)
+  .inSingletonScope();
 myContainer.bind<GoogleMapsClient>(TYPES.GoogleMapsClient).to(GoogleMapsClient);
 myContainer.bind<GeoUtil>(TYPES.GeoUtil).to(GeoUtil);
 myContainer

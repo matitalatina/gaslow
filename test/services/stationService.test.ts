@@ -1,16 +1,25 @@
-import { mock, reset, instance, when, verify, deepEqual } from "ts-mockito";
+import {
+  mock,
+  reset,
+  instance,
+  when,
+  verify,
+  deepEqual,
+  anything,
+} from "ts-mockito";
 import { polygon } from "@turf/helpers";
 import { StationService } from "../../src/services/stationService.js";
-import { aStation, aCsvPrice, aCsvStation } from "../utils/fixtures.js";
+import { aStation } from "../utils/fixtures.js";
 import { StationConverter } from "../../src/parsers/stationConverter.js";
 import { GoogleMapsClient } from "../../src/clients/GoogleMapsClient.js";
 import GeoUtil from "../../src/util/geo.js";
 import { range } from "lodash-es";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import type { BulkWriteResult } from "mongodb";
 import type { IStationRepository } from "../../src/repositories/StationRepository.js";
 import { PriceDownloader } from "../../src/fetchers/priceDownloader.js";
 import { StationDownloader } from "../../src/fetchers/stationDownloader.js";
+import { StationParser } from "../../src/parsers/stationParser.js";
+import { PriceParser } from "../../src/parsers/priceParser.js";
 
 const mockGoogleMapsClient = mock(GoogleMapsClient);
 const mockGeoUtil = mock(GeoUtil);
@@ -18,7 +27,20 @@ const mockStationRepository = mock<IStationRepository>();
 const mockPriceDownloader = mock(PriceDownloader);
 const mockStationDownloader = mock(StationDownloader);
 const mockStationConverter = mock(StationConverter);
+const stationParser = new StationParser();
+const priceParser = new PriceParser();
 let service: StationService;
+
+const stationCsv = [
+  "Estrazione del 2026-10-26",
+  "idImpianto|Gestore|Bandiera|Tipo Impianto|Nome Impianto|Indirizzo|Comune|Provincia|Latitudine|Longitudine",
+  "1|manager|brand|type|name|address|city|province|1|2",
+].join("\n");
+const priceCsv = [
+  "Estrazione del 2026-10-26",
+  "idImpianto|descCarburante|prezzo|isSelf|dtComu",
+  "1|Benzina|1.5|1|12/03/2026 16:30:11",
+].join("\n");
 
 describe("StationService", () => {
   beforeEach(() => {
@@ -36,6 +58,8 @@ describe("StationService", () => {
       instance(mockPriceDownloader),
       instance(mockStationDownloader),
       instance(mockStationConverter),
+      stationParser,
+      priceParser,
     );
   });
 
@@ -48,32 +72,20 @@ describe("StationService", () => {
   });
 
   it("should download and update DB with new data", async () => {
-    const csvStations = [aCsvStation()];
-    const csvPrices = [aCsvPrice()];
     const mergedStations = [aStation()];
 
     // Mock the downloader methods
-    when(mockStationDownloader.download()).thenResolve(csvStations);
-    when(mockPriceDownloader.download()).thenResolve(csvPrices);
+    when(mockStationDownloader.download()).thenResolve(stationCsv);
+    when(mockPriceDownloader.download()).thenResolve(priceCsv);
 
     // Mock the StationConverter.merge method
-    when(
-      mockStationConverter.merge(deepEqual(csvStations), deepEqual(csvPrices)),
-    ).thenReturn(mergedStations);
-
-    // Use ts-mockito to mock the bulkUpsertById method with a proper BulkWriteResult
-    const bulkWriteResult = {
-      acknowledged: true,
-      insertedCount: 0,
-      matchedCount: 1,
-      modifiedCount: 1,
-      upsertedCount: 1,
-      upsertedIds: { "0": "1" },
-    } as unknown as BulkWriteResult;
+    when(mockStationConverter.merge(anything(), anything())).thenResolve(
+      mergedStations,
+    );
 
     when(
       mockStationRepository.bulkUpsertById(deepEqual(mergedStations)),
-    ).thenResolve(bulkWriteResult);
+    ).thenResolve();
 
     await service.updateStationCollection();
 
@@ -81,15 +93,68 @@ describe("StationService", () => {
     verify(mockStationDownloader.download()).once();
     verify(mockPriceDownloader.download()).once();
 
-    // Verify that the StationConverter.merge method was called with the correct arguments
-    verify(
-      mockStationConverter.merge(deepEqual(csvStations), deepEqual(csvPrices)),
-    ).once();
+    // Verify that the StationConverter.merge method was called
+    verify(mockStationConverter.merge(anything(), anything())).once();
 
     // Verify that bulkUpsertById was called with the correct arguments
     verify(
       mockStationRepository.bulkUpsertById(deepEqual(mergedStations)),
     ).once();
+  });
+
+  it("should run only one update at a time", async () => {
+    const mergedStations = [aStation()];
+
+    when(mockStationDownloader.download()).thenResolve(stationCsv);
+    when(mockPriceDownloader.download()).thenResolve(priceCsv);
+    when(mockStationConverter.merge(anything(), anything())).thenResolve(
+      mergedStations,
+    );
+    when(
+      mockStationRepository.bulkUpsertById(deepEqual(mergedStations)),
+    ).thenResolve();
+
+    await Promise.all([
+      service.updateStationCollection(),
+      service.updateStationCollection(),
+    ]);
+
+    verify(mockStationDownloader.download()).once();
+    verify(mockPriceDownloader.download()).once();
+    verify(mockStationConverter.merge(anything(), anything())).once();
+    verify(
+      mockStationRepository.bulkUpsertById(deepEqual(mergedStations)),
+    ).once();
+  });
+
+  it("should resolve only after the database write has finished", async () => {
+    const mergedStations = [aStation()];
+    let finishWrite: () => void = () => undefined;
+    const writePromise = new Promise<void>((resolve) => {
+      finishWrite = resolve;
+    });
+
+    when(mockStationDownloader.download()).thenResolve(stationCsv);
+    when(mockPriceDownloader.download()).thenResolve(priceCsv);
+    when(mockStationConverter.merge(anything(), anything())).thenResolve(
+      mergedStations,
+    );
+    when(
+      mockStationRepository.bulkUpsertById(deepEqual(mergedStations)),
+    ).thenReturn(writePromise);
+
+    let settled = false;
+    const update = service.updateStationCollection().then(() => {
+      settled = true;
+    });
+
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(settled).toBe(false);
+
+    finishWrite();
+    await update;
+
+    expect(settled).toBe(true);
   });
 
   it("should find nearest stations given lat and lng", async () => {

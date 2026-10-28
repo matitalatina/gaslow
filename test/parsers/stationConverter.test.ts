@@ -1,7 +1,7 @@
 import moment from "moment";
 import { range, flatten, find } from "lodash-es";
 import { StationConverter } from "../../src/parsers/stationConverter.js";
-import type { IStation, Price } from "../../src/models/Station.js";
+import type { Station, Price } from "../../src/models/Station.js";
 import type { CsvPrice } from "../../src/parsers/models/csvPrice.js";
 import type { CsvStation } from "../../src/parsers/models/csvStation.js";
 import { describe, it, expect, beforeEach } from "vitest";
@@ -13,7 +13,7 @@ describe("StationConverter", () => {
     stationConverter = new StationConverter();
   });
 
-  it("should create a station from csvStations and csvPrices", () => {
+  it("should create a station from csvStations and csvPrices", async () => {
     const csvStations: CsvStation[] = range(4).map((i) => ({
       id: i,
       manager: `manager${i}`,
@@ -40,7 +40,10 @@ describe("StationConverter", () => {
         }),
       ),
     );
-    const stations: IStation[] = stationConverter.merge(csvStations, csvPrices);
+    const stations: Station[] = await stationConverter.merge(
+      csvStations,
+      csvPrices,
+    );
     expect(stations.length).toEqual(4);
     const firstStation = stations[0];
     expect(firstStation.id).toEqual(0);

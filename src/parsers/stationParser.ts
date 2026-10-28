@@ -1,23 +1,32 @@
+import { decode } from "html-entities";
 import { parseCsvSkip2Lines } from "./csvUtils.js";
 import type { CsvStation } from "./models/csvStation.js";
 import { injectable } from "inversify";
 
 @injectable()
 export class StationParser {
-  parse(csv: string): Promise<Array<CsvStation>> {
-    return parseCsvSkip2Lines(csv).then((csvLines) =>
-      csvLines.map((row) => ({
+  async *parseStream(csv: string): AsyncGenerator<CsvStation> {
+    for await (const row of parseCsvSkip2Lines(csv)) {
+      yield {
         id: parseInt(row[0], 10),
-        manager: row[1],
-        brand: row[2],
-        type: row[3],
-        name: row[4],
-        address: row[5],
-        city: row[6],
-        province: row[7],
+        manager: decode(row[1]),
+        brand: decode(row[2]),
+        type: decode(row[3]),
+        name: decode(row[4]),
+        address: decode(row[5]),
+        city: decode(row[6]),
+        province: decode(row[7]),
         latitude: row[8] !== "NULL" ? parseFloat(row[8]) : undefined,
         longitude: row[9] !== "NULL" ? parseFloat(row[9]) : undefined,
-      })),
-    );
+      };
+    }
+  }
+
+  async parse(csv: string): Promise<Array<CsvStation>> {
+    const stations: Array<CsvStation> = [];
+    for await (const station of this.parseStream(csv)) {
+      stations.push(station);
+    }
+    return stations;
   }
 }
