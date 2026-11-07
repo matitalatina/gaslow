@@ -3,6 +3,7 @@ services:
     image: gaslow:${VERSION}
     volumes:
       - ".env:/usr/src/app/.env:ro"
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
     environment:
       - TZ=Europe/Rome
     restart: unless-stopped
